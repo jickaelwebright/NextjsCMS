@@ -8,6 +8,7 @@ import { BuilderCanvas } from "./canvas/BuilderCanvas";
 import { LeftPanel } from "./panels/LeftPanel";
 import { RightPanel } from "./panels/RightPanel";
 import { BuilderToolbar } from "./toolbar/BuilderToolbar";
+import { MediaPickerModal } from "./panels/modals/MediaPickerModal";
 import type { PageDocument } from "@/types/page";
 
 interface BuilderAppProps {
@@ -48,6 +49,7 @@ export function BuilderApp({ pageId, pageTitle, initialDocument }: BuilderAppPro
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
+      <MediaPickerModal />
       <BuilderToolbar pageId={pageId} pageTitle={pageTitle} />
       <BuilderDndContext>
         <Group orientation="horizontal" className="flex-1 overflow-hidden">

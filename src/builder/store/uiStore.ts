@@ -10,6 +10,11 @@ interface UIState {
   previewDevice: PreviewDevice;
   isPreviewMode: boolean;
   dragOverColumnId: string | null;
+  // Inline text editing
+  editingBlockId: string | null;
+  // Media picker
+  mediaPickerOpen: boolean;
+  mediaPickerTarget: { blockId: string; field: string } | null;
 }
 
 // ─── Actions shape ────────────────────────────────────────────────────────────
@@ -21,6 +26,11 @@ interface UIActions {
   togglePreviewMode: () => void;
   setActiveLeftTab: (tab: LeftPanelTab) => void;
   setDragOverColumn: (id: string | null) => void;
+  // Inline text editing
+  setEditingBlock: (id: string | null) => void;
+  // Media picker
+  openMediaPicker: (blockId: string, field: string) => void;
+  closeMediaPicker: () => void;
 }
 
 type UIStore = UIState & UIActions;
@@ -35,6 +45,9 @@ export const useUIStore = create<UIStore>()((set) => ({
   previewDevice: "desktop",
   isPreviewMode: false,
   dragOverColumnId: null,
+  editingBlockId: null,
+  mediaPickerOpen: false,
+  mediaPickerTarget: null,
 
   // ── Actions ──────────────────────────────────────────────────────────────
   selectNode: (id, type) =>
@@ -51,4 +64,12 @@ export const useUIStore = create<UIStore>()((set) => ({
   setActiveLeftTab: (tab) => set({ activeLeftTab: tab }),
 
   setDragOverColumn: (id) => set({ dragOverColumnId: id }),
+
+  setEditingBlock: (id) => set({ editingBlockId: id }),
+
+  openMediaPicker: (blockId, field) =>
+    set({ mediaPickerOpen: true, mediaPickerTarget: { blockId, field } }),
+
+  closeMediaPicker: () =>
+    set({ mediaPickerOpen: false, mediaPickerTarget: null }),
 }));

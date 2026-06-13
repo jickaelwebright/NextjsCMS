@@ -1,11 +1,14 @@
 "use client";
 
 import { useBuilderStore } from "@/builder/store/builderStore";
+import { useUIStore } from "@/builder/store/uiStore";
 import { ColorPicker } from "../shared/ColorPicker";
+import { ImageIcon } from "lucide-react";
 import type { HeroBlock } from "@/types/page";
 
 export function HeroProperties({ block }: { block: HeroBlock }) {
   const { updateBlock } = useBuilderStore();
+  const { openMediaPicker } = useUIStore();
   const p = block.props;
 
   return (
@@ -32,8 +35,19 @@ export function HeroProperties({ block }: { block: HeroBlock }) {
       </div>
       <div>
         <label className="text-xs text-gray-600 block mb-1">Background Image</label>
-        <input className="w-full border rounded px-2 py-1.5 text-sm" value={p.backgroundImage ?? ""}
-          onChange={(e) => updateBlock(block.id, { backgroundImage: e.target.value })} placeholder="/uploads/..." />
+        <button
+          onClick={() => openMediaPicker(block.id, "backgroundImage")}
+          className="w-full flex items-center gap-2 border rounded px-2 py-1.5 text-sm hover:bg-gray-50 text-gray-700 mb-1"
+        >
+          <ImageIcon size={14} className="text-gray-400" />
+          {p.backgroundImage ? "Change image" : "Choose from library"}
+        </button>
+        <input
+          className="w-full border rounded px-2 py-1 text-xs text-gray-500"
+          value={p.backgroundImage ?? ""}
+          onChange={(e) => updateBlock(block.id, { backgroundImage: e.target.value })}
+          placeholder="or paste URL..."
+        />
       </div>
       <div>
         <label className="text-xs text-gray-600 block mb-1">Overlay Opacity ({p.backgroundOverlay ?? 0}%)</label>
