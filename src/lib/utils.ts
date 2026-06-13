@@ -118,6 +118,26 @@ export function createEmptyPage(title: string, slug: string): PageDocument {
   };
 }
 
+// Re-stamp all IDs in an AI-generated document to avoid collisions
+export function rehydrateDocumentIds(doc: PageDocument): PageDocument {
+  return {
+    ...doc,
+    sections: doc.sections.map(rehydrateSectionIds),
+  };
+}
+
+export function rehydrateSectionIds(section: Section): Section {
+  return {
+    ...section,
+    id: generateId(),
+    columns: section.columns.map((c) => ({
+      ...c,
+      id: generateId(),
+      blocks: c.blocks.map((b) => ({ ...b, id: generateId() })),
+    })),
+  };
+}
+
 // Convert ResponsiveStyle to inline style object for a given device
 export function styleToInline(style?: StyleProperties): React.CSSProperties {
   if (!style) return {};

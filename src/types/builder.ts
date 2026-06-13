@@ -2,7 +2,7 @@ import type { BlockType } from "./page";
 
 export type PreviewDevice = "mobile" | "tablet" | "desktop";
 export type SelectedNodeType = "section" | "column" | "block" | null;
-export type LeftPanelTab = "widgets" | "layers";
+export type LeftPanelTab = "widgets" | "layers" | "ai";
 
 export interface BlockMeta {
   type: BlockType;
