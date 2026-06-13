@@ -1,0 +1,82 @@
+import Database from "better-sqlite3";
+import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import path from "path";
+import * as schema from "./schema/tenant";
+
+type TenantDb = BetterSQLite3Database<typeof schema>;
+
+const cache = new Map<string, TenantDb>();
+
+function initTenantDb(db: Database.Database) {
+  db.pragma("journal_mode = WAL");
+  db.pragma("foreign_keys = ON");
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS pages (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      slug TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'draft',
+      page_type TEXT NOT NULL DEFAULT 'page',
+      content TEXT NOT NULL DEFAULT '{}',
+      thumbnail_url TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      published_at INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS media (
+      id TEXT PRIMARY KEY,
+      filename TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      size INTEGER NOT NULL,
+      width INTEGER,
+      height INTEGER,
+      url TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS templates (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      category TEXT,
+      thumbnail TEXT,
+      content TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS forms (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      fields TEXT NOT NULL DEFAULT '[]',
+      email_to TEXT,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS form_submissions (
+      id TEXT PRIMARY KEY,
+      form_id TEXT NOT NULL,
+      data TEXT NOT NULL,
+      submitted_at INTEGER NOT NULL,
+      ip_address TEXT
+    );
+    CREATE TABLE IF NOT EXISTS global_regions (
+      id TEXT PRIMARY KEY,
+      content TEXT NOT NULL DEFAULT '{}',
+      updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS site_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+  `);
+}
+
+export function getTenantDb(tenantSlug: string): TenantDb {
+  if (cache.has(tenantSlug)) {
+    return cache.get(tenantSlug)!;
+  }
+
+  const dbPath = path.join(process.cwd(), "data", `tenant-${tenantSlug}.db`);
+  const sqlite = new Database(dbPath);
+  initTenantDb(sqlite);
+  const db = drizzle(sqlite, { schema });
+  cache.set(tenantSlug, db);
+  return db;
+}

@@ -1,0 +1,139 @@
+import type React from "react";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { customAlphabet } from "nanoid";
+import type {
+  Block,
+  BlockType,
+  Column,
+  ColumnLayout,
+  Section,
+  PageDocument,
+  ResponsiveStyle,
+  StyleProperties,
+} from "@/types/page";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+const nanoid = customAlphabet(
+  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  12
+);
+
+export function generateId(): string {
+  return nanoid();
+}
+
+export function emptyStyles(): ResponsiveStyle {
+  return { mobile: {}, tablet: {}, desktop: {} };
+}
+
+export function createBlock(type: BlockType): Block {
+  const base = { id: generateId(), styles: emptyStyles() };
+  switch (type) {
+    case "text":
+      return { ...base, type: "text", props: { content: "<p>Add your text here</p>", align: "left" } };
+    case "heading":
+      return { ...base, type: "heading", props: { content: "Your Heading", level: 2, align: "left" } };
+    case "image":
+      return { ...base, type: "image", props: { src: "", alt: "Image", objectFit: "cover" } };
+    case "button":
+      return { ...base, type: "button", props: { label: "Click Here", href: "#", variant: "primary", size: "md" } };
+    case "hero":
+      return {
+        ...base,
+        type: "hero",
+        props: {
+          heading: "Welcome to Your Site",
+          subheading: "A compelling subtitle that drives action",
+          ctaLabel: "Get Started",
+          ctaHref: "#",
+          align: "center",
+          minHeight: "60vh",
+          textColor: "#ffffff",
+          backgroundOverlay: 50,
+        },
+      };
+    case "card":
+      return {
+        ...base,
+        type: "card",
+        props: { heading: "Card Title", body: "Card description goes here.", variant: "default" },
+      };
+    case "video":
+      return { ...base, type: "video", props: { url: "", controls: true } };
+    case "divider":
+      return { ...base, type: "divider", props: { style: "solid", color: "#e5e7eb", thickness: 1, width: 100 } };
+    case "spacer":
+      return { ...base, type: "spacer", props: { height: 40 } };
+    case "form":
+      return {
+        ...base,
+        type: "form",
+        props: {
+          submitLabel: "Submit",
+          successMessage: "Thank you! We'll be in touch.",
+          fields: [
+            { id: generateId(), type: "text", label: "Name", placeholder: "Your name", required: true },
+            { id: generateId(), type: "email", label: "Email", placeholder: "your@email.com", required: true },
+            { id: generateId(), type: "textarea", label: "Message", placeholder: "Your message", required: false },
+          ],
+        },
+      };
+    default:
+      return { ...base, type: "text", props: { content: "Block" } } as Block;
+  }
+}
+
+export function createColumn(span: number): Column {
+  return { id: generateId(), span, blocks: [], styles: emptyStyles() };
+}
+
+export function createSection(layout: ColumnLayout = "1"): Section {
+  const spans: Record<ColumnLayout, number[]> = {
+    "1": [12],
+    "1/2+1/2": [6, 6],
+    "1/3+2/3": [4, 8],
+    "2/3+1/3": [8, 4],
+    "1/3+1/3+1/3": [4, 4, 4],
+    "1/4+1/4+1/4+1/4": [3, 3, 3, 3],
+  };
+  return {
+    id: generateId(),
+    columns: spans[layout].map(createColumn),
+    columnLayout: layout,
+    styles: { mobile: { paddingTop: "48px", paddingBottom: "48px" }, tablet: {}, desktop: {} },
+    containerWidth: "xl",
+  };
+}
+
+export function createEmptyPage(title: string, slug: string): PageDocument {
+  return {
+    version: 1,
+    meta: { title, slug },
+    settings: { headerVisible: true, footerVisible: true },
+    sections: [],
+  };
+}
+
+// Convert ResponsiveStyle to inline style object for a given device
+export function styleToInline(style?: StyleProperties): React.CSSProperties {
+  if (!style) return {};
+  const css: React.CSSProperties = {};
+  if (style.marginTop) css.marginTop = style.marginTop;
+  if (style.marginBottom) css.marginBottom = style.marginBottom;
+  if (style.paddingTop) css.paddingTop = style.paddingTop;
+  if (style.paddingBottom) css.paddingBottom = style.paddingBottom;
+  if (style.paddingLeft) css.paddingLeft = style.paddingLeft;
+  if (style.paddingRight) css.paddingRight = style.paddingRight;
+  if (style.backgroundColor) css.backgroundColor = style.backgroundColor;
+  if (style.textColor) css.color = style.textColor;
+  if (style.borderRadius) css.borderRadius = style.borderRadius;
+  if (style.borderWidth && style.borderColor)
+    css.border = `${style.borderWidth}px solid ${style.borderColor}`;
+  if (style.boxShadow) css.boxShadow = style.boxShadow;
+  if (style.opacity) css.opacity = parseFloat(style.opacity) / 100;
+  return css;
+}
