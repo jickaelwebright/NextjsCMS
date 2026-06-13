@@ -1,0 +1,25 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST_STAGING }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.SSH_APP_PATH_STAGING }}
+            git pull origin staging
+            npm ci --omit=dev
+            npm run build
+            pm2 restart nextjscms-staging || pm2 start "npm start" --name nextjscms-staging
+            pm2 save
+            echo "✅ Staging deploy complete: $(date)"

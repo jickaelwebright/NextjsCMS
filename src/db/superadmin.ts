@@ -27,7 +27,11 @@ function createSuperadminDb(): SuperadminDb {
       db_path TEXT NOT NULL,
       plan TEXT NOT NULL DEFAULT 'active',
       created_at INTEGER NOT NULL
-    )
+    );
+    CREATE TABLE IF NOT EXISTS cms_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
   return drizzle(sqlite, { schema });
 }

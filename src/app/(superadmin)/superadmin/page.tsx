@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Loader2, Globe, Pause, Play, Trash2 } from "lucide-react";
+import { Plus, Loader2, Globe, Pause, Play, Settings } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 interface Tenant {
@@ -54,9 +55,14 @@ export default function SuperAdminPage() {
     <div className="p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Client Sites</h1>
-        <button onClick={() => setShowNew(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
-          <Plus size={16} /> New Site
-        </button>
+        <div className="flex gap-2">
+          <Link href="/setup" className="flex items-center gap-2 px-3 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50">
+            <Settings size={14} /> Setup
+          </Link>
+          <button onClick={() => setShowNew(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+            <Plus size={16} /> New Site
+          </button>
+        </div>
       </div>
 
       {/* New Tenant Modal */}

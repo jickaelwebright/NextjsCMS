@@ -66,25 +66,22 @@ export default function SettingsPage() {
     ai_gemini_key: "",
   });
   const [savingAI, setSavingAI] = useState(false);
-  const [loadedAI, setLoadedAI] = useState(false);
 
+  // Load all settings on mount
   useEffect(() => {
-    if (tab === "ai" && !loadedAI) {
-      fetch("/api/settings")
-        .then((r) => r.json())
-        .then((data: Record<string, string>) => {
-          setAiKeys({
-            ai_openai_key: data.ai_openai_key ?? "",
-            ai_openrouter_key: data.ai_openrouter_key ?? "",
-            ai_nim_key: data.ai_nim_key ?? "",
-            ai_gemini_key: data.ai_gemini_key ?? "",
-          });
-          if (data.siteName) setSiteName(data.siteName);
-          setLoadedAI(true);
-        })
-        .catch(() => {});
-    }
-  }, [tab, loadedAI]);
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data: Record<string, string>) => {
+        if (data.siteName) setSiteName(data.siteName);
+        setAiKeys({
+          ai_openai_key: data.ai_openai_key ?? "",
+          ai_openrouter_key: data.ai_openrouter_key ?? "",
+          ai_nim_key: data.ai_nim_key ?? "",
+          ai_gemini_key: data.ai_gemini_key ?? "",
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   async function saveSettings() {
     setSaving(true);

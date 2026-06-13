@@ -11,3 +11,8 @@ export const tenants = sqliteTable("tenants", {
   plan: text("plan", { enum: ["active", "suspended"] }).notNull().default("active"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
+
+export const cmsSettings = sqliteTable("cms_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+});
