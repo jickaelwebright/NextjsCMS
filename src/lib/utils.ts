@@ -82,6 +82,18 @@ export function createBlock(type: BlockType): Block {
           ],
         },
       };
+    case "testimonial":
+      return {
+        ...base,
+        type: "testimonial",
+        props: {
+          quote: "This product completely changed how we work. Highly recommend!",
+          authorName: "Jane Smith",
+          authorRole: "CEO",
+          authorCompany: "Acme Corp",
+          rating: 5,
+        },
+      };
     default:
       return { ...base, type: "text", props: { content: "Block" } } as Block;
   }

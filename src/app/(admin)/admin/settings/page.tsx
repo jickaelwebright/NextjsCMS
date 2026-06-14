@@ -66,6 +66,10 @@ type DeployLogEntry = { slug: string; ok: boolean; message: string };
 
 export default function SettingsPage() {
   const [siteName, setSiteName] = useState("");
+  const [siteDescription, setSiteDescription] = useState("");
+  const [siteUrl, setSiteUrl] = useState("");
+  const [orgName, setOrgName] = useState("");
+  const [orgLogoUrl, setOrgLogoUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<Tab>("site");
 
@@ -99,6 +103,10 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((data: Record<string, string>) => {
         if (data.siteName) setSiteName(data.siteName);
+        setSiteDescription(data.siteDescription ?? "");
+        setSiteUrl(data.site_url ?? "");
+        setOrgName(data.org_name ?? "");
+        setOrgLogoUrl(data.org_logo_url ?? "");
         setAiKeys({
           ai_openai_key: data.ai_openai_key ?? "",
           ai_openrouter_key: data.ai_openrouter_key ?? "",
@@ -122,7 +130,7 @@ export default function SettingsPage() {
     await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ siteName }),
+      body: JSON.stringify({ siteName, siteDescription, site_url: siteUrl, org_name: orgName, org_logo_url: orgLogoUrl }),
     });
     toast.success("Settings saved");
     setSaving(false);
@@ -240,16 +248,47 @@ export default function SettingsPage() {
 
       {/* Site Settings */}
       {tab === "site" && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-5">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Site Name</label>
-            <input
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-              placeholder="My Site"
-            />
+            <h3 className="text-sm font-semibold text-gray-800 mb-3">General</h3>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Site Name</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  value={siteName} onChange={(e) => setSiteName(e.target.value)} placeholder="My Business" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Site Description</label>
+                <textarea rows={2} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                  value={siteDescription} onChange={(e) => setSiteDescription(e.target.value)}
+                  placeholder="Brief description of your site (used in meta and JSON-LD)" />
+              </div>
+            </div>
           </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-gray-800 mb-1">SEO & Schema</h3>
+            <p className="text-xs text-gray-400 mb-3">Used for canonical URLs, sitemap.xml, and Organization structured data.</p>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Site URL</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-mono"
+                  value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} placeholder="https://example.com" />
+                <p className="text-xs text-gray-400 mt-1">No trailing slash. Used in sitemap, canonical, and JSON-LD.</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Organization Name</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Acme Pty Ltd" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Organization Logo URL</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  value={orgLogoUrl} onChange={(e) => setOrgLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" />
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={saveSettings}
             disabled={saving}

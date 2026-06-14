@@ -166,6 +166,20 @@ export interface FormField {
   options?: string[];
 }
 
+export interface TestimonialBlock {
+  id: NodeId;
+  type: "testimonial";
+  props: {
+    quote: string;
+    authorName: string;
+    authorRole?: string;
+    authorCompany?: string;
+    avatarUrl?: string;
+    rating?: number;
+  };
+  styles: ResponsiveStyle;
+}
+
 export type Block =
   | TextBlock
   | HeadingBlock
@@ -176,7 +190,8 @@ export type Block =
   | VideoBlock
   | DividerBlock
   | SpacerBlock
-  | FormBlock;
+  | FormBlock
+  | TestimonialBlock;
 
 export type BlockType = Block["type"];
 
@@ -219,6 +234,7 @@ export interface PageMeta {
   slug: string;
   description?: string;
   ogImage?: string;
+  twitterImage?: string;
   canonicalUrl?: string;
   noIndex?: boolean;
 }

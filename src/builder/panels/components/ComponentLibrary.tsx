@@ -7,13 +7,13 @@ import type { BlockType } from "@/types/page";
 import type { DragData } from "@/types/builder";
 import {
   Heading, Type, Image, MousePointerClick, LayoutTemplate,
-  CreditCard, Video, Minus, Space, FormInput,
+  CreditCard, Video, Minus, Space, FormInput, Quote,
 } from "lucide-react";
 
 type IconComponent = React.ComponentType<{ size?: number; className?: string }>;
 const ICONS: Record<string, IconComponent> = {
   Heading, Type, Image, MousePointerClick, LayoutTemplate,
-  CreditCard, Video, Minus, Space, FormInput,
+  CreditCard, Video, Minus, Space, FormInput, Quote,
 };
 
 const CATEGORIES = [

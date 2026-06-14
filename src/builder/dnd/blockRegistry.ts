@@ -10,7 +10,8 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
   { type: "video",    label: "Video",    icon: "Video",              category: "media",       description: "Embed video" },
   { type: "divider",  label: "Divider",  icon: "Minus",              category: "layout",      description: "Horizontal rule" },
   { type: "spacer",   label: "Spacer",   icon: "Space",              category: "layout",      description: "Vertical spacer" },
-  { type: "form",     label: "Form",     icon: "FormInput",          category: "interactive", description: "Contact form" },
+  { type: "form",        label: "Form",        icon: "FormInput",   category: "interactive", description: "Contact form" },
+  { type: "testimonial", label: "Testimonial", icon: "Quote",       category: "layout",      description: "Customer quote" },
 ];
 
 export function getBlockMeta(type: BlockType): BlockMeta | undefined {
