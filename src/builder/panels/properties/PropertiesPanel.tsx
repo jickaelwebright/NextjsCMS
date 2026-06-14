@@ -11,6 +11,7 @@ import { CardProperties } from "./blocks/CardProperties";
 import { SpacerProperties } from "./blocks/SpacerProperties";
 import { VideoProperties } from "./blocks/VideoProperties";
 import { FormProperties } from "./blocks/FormProperties";
+import { DividerProperties } from "./blocks/DividerProperties";
 import { SectionProperties } from "./blocks/SectionProperties";
 import { Settings } from "lucide-react";
 import type { PageDocument, Block, Section } from "@/types/page";
@@ -26,7 +27,8 @@ function BlockPropertyRouter({ block }: { block: Block }) {
     case "spacer":   return <SpacerProperties block={block} />;
     case "video":    return <VideoProperties block={block} />;
     case "form":     return <FormProperties block={block} />;
-    default: return <p className="text-xs text-gray-400 p-3">No properties for {block.type}</p>;
+    case "divider":  return <DividerProperties block={block} />;
+    default: return <p className="text-xs text-gray-400 p-3">No properties for {(block as Block).type}</p>;
   }
 }
 
