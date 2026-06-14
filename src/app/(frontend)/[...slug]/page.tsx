@@ -19,7 +19,7 @@ async function getTenant() {
 
 async function getSiteSettings(tenantSlug: string): Promise<Record<string, string>> {
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     const rows = await db.select().from(siteSettings);
     return Object.fromEntries(rows.map((r) => [r.key, r.value]));
   } catch { return {}; }

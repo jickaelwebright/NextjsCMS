@@ -1,22 +1,25 @@
-import Database from "better-sqlite3";
-import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { createClient } from "@libsql/client";
+import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import path from "path";
 import fs from "fs";
 import * as schema from "./schema/superadmin";
 
-type SuperadminDb = BetterSQLite3Database<typeof schema>;
+type SuperadminDb = LibSQLDatabase<typeof schema>;
 
 let _db: SuperadminDb | null = null;
 
-function createSuperadminDb(): SuperadminDb {
-  const dataDir = path.join(process.cwd(), "data");
+function getDbPath(): string {
+  const dataDir = process.env.DATA_DIR
+    ? path.resolve(process.env.DATA_DIR)
+    : path.join(process.cwd(), "data");
   fs.mkdirSync(dataDir, { recursive: true });
+  return path.join(dataDir, "superadmin.db");
+}
 
-  const dbPath = path.join(dataDir, "superadmin.db");
-  const sqlite = new Database(dbPath);
-  sqlite.pragma("journal_mode = WAL");
-  sqlite.pragma("foreign_keys = ON");
-  sqlite.exec(`
+async function createSuperadminDb(): Promise<SuperadminDb> {
+  const dbPath = getDbPath();
+  const client = createClient({ url: `file:${dbPath}` });
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS tenants (
       id TEXT PRIMARY KEY,
       slug TEXT NOT NULL UNIQUE,
@@ -27,23 +30,21 @@ function createSuperadminDb(): SuperadminDb {
       db_path TEXT NOT NULL,
       plan TEXT NOT NULL DEFAULT 'active',
       created_at INTEGER NOT NULL
-    );
+    )
+  `);
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS cms_settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
-    );
+    )
   `);
-  return drizzle(sqlite, { schema });
+  return drizzle(client, { schema });
 }
 
-export function getSuperadminDb(): SuperadminDb {
-  if (!_db) _db = createSuperadminDb();
-  return _db;
-}
+let _initPromise: Promise<SuperadminDb> | null = null;
 
-// Convenience alias
-export const superadminDb = new Proxy({} as SuperadminDb, {
-  get(_target, prop) {
-    return (getSuperadminDb() as any)[prop];
-  },
-});
+export async function getSuperadminDb(): Promise<SuperadminDb> {
+  if (_db) return _db;
+  if (!_initPromise) _initPromise = createSuperadminDb().then((db) => { _db = db; return db; });
+  return _initPromise;
+}

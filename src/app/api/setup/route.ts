@@ -13,7 +13,7 @@ const DEFAULTS = {
 };
 
 async function getSettings() {
-  const db = getSuperadminDb();
+  const db = await getSuperadminDb();
   const rows = await db.select().from(cmsSettings);
   const map: Record<string, string> = { ...DEFAULTS };
   for (const r of rows) map[r.key] = r.value;
@@ -26,7 +26,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const db = getSuperadminDb();
+  const db = await getSuperadminDb();
   const body = await req.json();
 
   const allowed = ["cms_name", "cms_tagline", "cms_logo_url", "cms_primary_color", "setup_complete"];

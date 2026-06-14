@@ -6,18 +6,18 @@ import { revalidatePath } from "next/cache";
 import type { PageDocument } from "@/types/page";
 
 export async function getPages(tenantSlug: string, type?: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const q = db.select().from(pages).orderBy(desc(pages.updatedAt));
   return type ? (await q).filter((p) => p.pageType === type) : q;
 }
 
 export async function getPageById(tenantSlug: string, id: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   return db.select().from(pages).where(eq(pages.id, id)).get();
 }
 
 export async function getPageBySlug(tenantSlug: string, slug: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   return db.select().from(pages).where(eq(pages.slug, slug)).get();
 }
 
@@ -25,7 +25,7 @@ export async function createPage(
   tenantSlug: string,
   data: { title: string; slug: string; pageType?: string }
 ) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const id = generateId();
   const now = new Date();
   const doc = createEmptyPage(data.title, data.slug);
@@ -47,7 +47,7 @@ export async function updatePageContent(
   id: string,
   document: PageDocument
 ) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   await db
     .update(pages)
     .set({ content: JSON.stringify(document), updatedAt: new Date() })
@@ -59,7 +59,7 @@ export async function updatePageMeta(
   id: string,
   meta: { title?: string; slug?: string; description?: string; ogImage?: string; noIndex?: boolean }
 ) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const page = await db.select().from(pages).where(eq(pages.id, id)).get();
   if (!page) throw new Error("Page not found");
 
@@ -80,7 +80,7 @@ export async function updatePageMeta(
 }
 
 export async function publishPage(tenantSlug: string, id: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const page = await db.select().from(pages).where(eq(pages.id, id)).get();
   if (!page) throw new Error("Page not found");
 
@@ -103,12 +103,12 @@ export async function publishPage(tenantSlug: string, id: string) {
 }
 
 export async function deletePage(tenantSlug: string, id: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   await db.delete(pages).where(eq(pages.id, id));
 }
 
 export async function duplicatePage(tenantSlug: string, id: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const original = await db.select().from(pages).where(eq(pages.id, id)).get();
   if (!original) throw new Error("Page not found");
 
@@ -128,7 +128,7 @@ export async function duplicatePage(tenantSlug: string, id: string) {
 }
 
 export async function getPublishedPages(tenantSlug: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   return db
     .select({ slug: pages.slug, title: pages.title })
     .from(pages)

@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   if (!tenantSlug) return NextResponse.json({ error: "No tenant" }, { status: 400 });
 
   const body = await req.json();
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const id = generateId();
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? null;
 

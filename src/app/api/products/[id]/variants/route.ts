@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const tenantSlug = (session.user as any).tenantSlug;
   if (!await isAddonEnabled(tenantSlug, "shop")) return NextResponse.json({ error: "Shop addon not enabled" }, { status: 403 });
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const variants = await db.select().from(productVariants).where(eq(productVariants.productId, id));
   return NextResponse.json(variants);
 }
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const tenantSlug = (session.user as any).tenantSlug;
   if (!await isAddonEnabled(tenantSlug, "shop")) return NextResponse.json({ error: "Shop addon not enabled" }, { status: 403 });
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const body = await req.json();
   const variantId = generateId();
   await db.insert(productVariants).values({
@@ -49,7 +49,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const tenantSlug = (session.user as any).tenantSlug;
   if (!await isAddonEnabled(tenantSlug, "shop")) return NextResponse.json({ error: "Shop addon not enabled" }, { status: 403 });
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const body: Array<{ id: string; name: string; sku?: string; price: number; salePrice?: number; stock: number; attributes?: Record<string, string> }> = await req.json();
   const { id: productId } = await params;
 

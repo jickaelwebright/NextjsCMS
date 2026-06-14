@@ -16,7 +16,7 @@ export async function DELETE(
 
   const { id } = await params;
   const tenantSlug = (session.user as any).tenantSlug;
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
 
   const item = await db.select().from(media).where(eq(media.id, id)).get();
   if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });

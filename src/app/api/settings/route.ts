@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const tenantSlug = (session.user as any).tenantSlug;
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const all = await db.select().from(siteSettings);
   const result: Record<string, string> = {};
   all.forEach(({ key, value }) => { result[key] = value; });
@@ -27,7 +27,7 @@ export async function PUT(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const tenantSlug = (session.user as any).tenantSlug;
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const body = await req.json();
   for (const [key, value] of Object.entries(body)) {
     if (typeof value !== "string") continue;

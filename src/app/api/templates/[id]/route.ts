@@ -13,7 +13,7 @@ export async function DELETE(
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const tenantSlug = (session.user as any).tenantSlug;
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   await db.delete(templates).where(eq(templates.id, id));
   return NextResponse.json({ success: true });
 }

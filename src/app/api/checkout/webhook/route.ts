@@ -7,12 +7,12 @@ import { generateId } from "@/lib/utils";
 import { nanoid } from "nanoid";
 
 async function getTenantFromPaymentIntent(paymentIntentId: string, tenantSlug: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   return db.select().from(orders).where(eq(orders.paymentRef, paymentIntentId)).get();
 }
 
 async function generateDigitalDeliveries(tenantSlug: string, orderId: string) {
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const order = await db.select().from(orders).where(eq(orders.id, orderId)).get();
   if (!order) return;
 
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   const tenantSlug = req.nextUrl.searchParams.get("tenant") ?? "default";
 
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     const secretRow = await db.select().from(siteSettings).where(eq(siteSettings.key, "stripe_webhook_secret")).get();
     const webhookSecret = secretRow?.value;
 

@@ -19,7 +19,7 @@ interface CartItem {
 
 async function getStripeKey(tenantSlug: string): Promise<string | null> {
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     const row = await db.select().from(siteSettings).where(eq(siteSettings.key, "stripe_secret_key")).get();
     return row?.value?.trim() || null;
   } catch { return null; }
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing cart or billing info" }, { status: 400 });
   }
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
 
   // Validate cart items against DB
   const productIds = [...new Set(cart.map((i) => i.productId))];

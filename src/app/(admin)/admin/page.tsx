@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   const tenantSlug = (session?.user as any)?.tenantSlug ?? "default";
   const tenantName = (session?.user as any)?.tenantName ?? tenantSlug;
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const allPages = await db.select().from(pages).where(eq(pages.pageType, "page"));
   const allPosts = await db.select().from(pages).where(eq(pages.pageType, "post"));
   const allMedia = await db.select().from(media);

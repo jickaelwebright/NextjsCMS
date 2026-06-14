@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   }
 
   const url = `/uploads/${tenantSlug}/${filename}`;
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   await db.insert(media).values({
     id,
     filename,

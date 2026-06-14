@@ -10,7 +10,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 
   let siteUrl = "";
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     const urlSetting = await db.select().from(siteSettings).where(eq(siteSettings.key, "site_url")).get();
     siteUrl = (urlSetting?.value ?? "").replace(/\/$/, "");
   } catch { /* use empty */ }

@@ -16,7 +16,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   let variants: typeof productVariants.$inferSelect[] = [];
 
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     product = await db.select().from(products).where(eq(products.slug, slug)).get();
     if (product) {
       variants = await db.select().from(productVariants).where(eq(productVariants.productId, product.id));

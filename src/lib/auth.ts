@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { superadminDb } from "@/db/superadmin";
+import { getSuperadminDb } from "@/db/superadmin";
 import { tenants } from "@/db/schema/superadmin";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -35,7 +35,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         // Per-tenant admin login
-        const tenant = await superadminDb
+        const db = await getSuperadminDb();
+        const tenant = await db
           .select()
           .from(tenants)
           .where(eq(tenants.slug, tenantSlug))

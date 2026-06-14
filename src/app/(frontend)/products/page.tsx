@@ -12,7 +12,7 @@ export default async function ProductsPage() {
 
   let items: typeof products.$inferSelect[] = [];
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     items = await db.select().from(products).where(eq(products.status, "published"));
   } catch {
     // shop tables may not exist

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const tenantSlug = (session.user as any).tenantSlug;
   if (!await isAddonEnabled(tenantSlug, "shop")) return NextResponse.json({ error: "Shop addon not enabled" }, { status: 403 });
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const order = await db.select().from(orders).where(eq(orders.id, id)).get();
   if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(order);
@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const tenantSlug = (session.user as any).tenantSlug;
   if (!await isAddonEnabled(tenantSlug, "shop")) return NextResponse.json({ error: "Shop addon not enabled" }, { status: 403 });
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const { status, notes } = await req.json();
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (status) updates.status = status;

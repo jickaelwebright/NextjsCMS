@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const tenantSlug = (session.user as any).tenantSlug;
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const regionId = req.nextUrl.searchParams.get("id") ?? "header";
   const region = await db.select().from(globalRegions).where(eq(globalRegions.id, regionId)).get();
   return NextResponse.json(region ?? { id: regionId, content: "{}", updatedAt: new Date() });
@@ -19,7 +19,7 @@ export async function PUT(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const tenantSlug = (session.user as any).tenantSlug;
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const body = await req.json();
   const regionId = body.id as string;
   const content = typeof body.content === "string" ? body.content : JSON.stringify(body.content);

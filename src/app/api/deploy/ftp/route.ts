@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const tenantSlug = (session.user as any).tenantSlug;
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const { action } = await req.json();
 
   // Load FTP credentials from tenant siteSettings

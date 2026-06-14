@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
   const { token } = await params;
   const hdrs = await headers();
   const tenantSlug = hdrs.get("x-tenant-slug") ?? "default";
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
 
   const delivery = await db.select().from(digitalDeliveries).where(eq(digitalDeliveries.token, token)).get();
 

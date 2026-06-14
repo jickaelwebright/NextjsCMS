@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const tenantSlug = (session.user as any).tenantSlug;
   if (!await isAddonEnabled(tenantSlug, "shop")) return NextResponse.json({ error: "Shop addon not enabled" }, { status: 403 });
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const status = req.nextUrl.searchParams.get("status");
   let list = await db.select().from(orders).orderBy(desc(orders.createdAt));
   if (status) list = list.filter((o) => o.status === status);

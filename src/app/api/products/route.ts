@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const tenantSlug = (session.user as any).tenantSlug;
   if (!await isAddonEnabled(tenantSlug, "shop")) return NextResponse.json({ error: "Shop addon not enabled" }, { status: 403 });
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const type = req.nextUrl.searchParams.get("type");
   const status = req.nextUrl.searchParams.get("status");
   let list = await db.select().from(products).orderBy(desc(products.createdAt));
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   const tenantSlug = (session.user as any).tenantSlug;
   if (!await isAddonEnabled(tenantSlug, "shop")) return NextResponse.json({ error: "Shop addon not enabled" }, { status: 403 });
 
-  const db = getTenantDb(tenantSlug);
+  const db = await getTenantDb(tenantSlug);
   const body = await req.json();
   const parsed = CreateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

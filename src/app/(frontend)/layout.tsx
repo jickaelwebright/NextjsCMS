@@ -9,7 +9,7 @@ import { CartIcon } from "@/components/frontend/CartIcon";
 
 async function getSiteName(tenantSlug: string): Promise<string> {
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     const name = await db.select().from(siteSettings).where(eq(siteSettings.key, "siteName")).get();
     return name?.value ?? tenantSlug;
   } catch { return tenantSlug; }
@@ -17,7 +17,7 @@ async function getSiteName(tenantSlug: string): Promise<string> {
 
 async function getRegion(tenantSlug: string, id: "header" | "footer"): Promise<PageDocument | null> {
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     const region = await db.select().from(globalRegions).where(eq(globalRegions.id, id)).get();
     if (!region || region.content === "{}") return null;
     return JSON.parse(region.content) as PageDocument;

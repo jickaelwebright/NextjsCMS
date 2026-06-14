@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let siteUrl = "";
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     const urlSetting = await db.select().from(siteSettings).where(eq(siteSettings.key, "site_url")).get();
     siteUrl = (urlSetting?.value ?? "").replace(/\/$/, "");
   } catch { /* use empty base */ }
@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let publishedPages: Array<{ slug: string; pageType: string; updatedAt: Date | number | null }> = [];
   try {
-    const db = getTenantDb(tenantSlug);
+    const db = await getTenantDb(tenantSlug);
     publishedPages = await db
       .select({ slug: pages.slug, pageType: pages.pageType, updatedAt: pages.updatedAt })
       .from(pages)
