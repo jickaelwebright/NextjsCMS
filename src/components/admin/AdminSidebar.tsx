@@ -5,27 +5,57 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, FileText, BookOpen, Image,
-  Layout, Settings, LogOut, Layers, Inbox,
+  Layout, Settings, LogOut, Layers, Inbox, Puzzle,
+  Package, ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV = [
+const CORE_NAV = [
   { href: "/admin",           label: "Dashboard",  icon: LayoutDashboard },
   { href: "/admin/pages",     label: "Pages",      icon: FileText },
   { href: "/admin/posts",     label: "Blog Posts", icon: BookOpen },
   { href: "/admin/media",     label: "Media",      icon: Image },
   { href: "/admin/templates", label: "Templates",  icon: Layout },
-  { href: "/admin/forms",     label: "Forms",       icon: Inbox },
-  { href: "/admin/settings",  label: "Settings",   icon: Settings },
+  { href: "/admin/forms",     label: "Forms",      icon: Inbox },
+] as const;
+
+const SHOP_NAV = [
+  { href: "/admin/products", label: "Products",  icon: Package },
+  { href: "/admin/orders",   label: "Orders",    icon: ShoppingCart },
+] as const;
+
+const BOTTOM_NAV = [
+  { href: "/admin/addons",   label: "Addons",    icon: Puzzle },
+  { href: "/admin/settings", label: "Settings",  icon: Settings },
 ] as const;
 
 interface AdminSidebarProps {
   tenantName: string;
   userEmail: string;
+  enabledAddons?: string[];
 }
 
-export function AdminSidebar({ tenantName, userEmail }: AdminSidebarProps) {
+export function AdminSidebar({ tenantName, userEmail, enabledAddons = [] }: AdminSidebarProps) {
   const path = usePathname();
+  const shopEnabled = enabledAddons.includes("shop");
+
+  function NavLink({ href, label, icon: Icon }: { href: string; label: string; icon: React.ComponentType<{size?: number}> }) {
+    const active = path === href || (href !== "/admin" && path.startsWith(href));
+    return (
+      <Link
+        href={href}
+        className={cn(
+          "flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors",
+          active
+            ? "bg-blue-600 text-white"
+            : "text-gray-300 hover:bg-gray-800 hover:text-white"
+        )}
+      >
+        <Icon size={16} />
+        {label}
+      </Link>
+    );
+  }
 
   return (
     <aside className="w-56 flex flex-col h-full bg-gray-900 text-white">
@@ -42,24 +72,19 @@ export function AdminSidebar({ tenantName, userEmail }: AdminSidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 py-3 overflow-y-auto">
-        {NAV.map(({ href, label, icon: Icon }) => {
-          const active = path === href || (href !== "/admin" && path.startsWith(href));
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors",
-                active
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
-              )}
-            >
-              <Icon size={16} />
-              {label}
-            </Link>
-          );
-        })}
+        {CORE_NAV.map((item) => <NavLink key={item.href} {...item} />)}
+
+        {/* Shop addon nav (only when enabled) */}
+        {shopEnabled && (
+          <>
+            <p className="px-4 pt-4 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Shop</p>
+            {SHOP_NAV.map((item) => <NavLink key={item.href} {...item} />)}
+          </>
+        )}
+
+        <div className="border-t border-gray-700 mt-3 pt-3">
+          {BOTTOM_NAV.map((item) => <NavLink key={item.href} {...item} />)}
+        </div>
       </nav>
 
       {/* User footer */}

@@ -64,3 +64,77 @@ export const siteSettings = sqliteTable("site_settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
 });
+
+export const addonSettings = sqliteTable("addon_settings", {
+  key: text("key").primaryKey(),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(false),
+  config: text("config").notNull().default("{}"),
+  enabledAt: integer("enabled_at", { mode: "timestamp" }),
+});
+
+// ─── Shop addon tables (only created when shop addon is activated) ─────────────
+
+export const products = sqliteTable("products", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description").notNull().default(""),
+  shortDescription: text("short_description"),
+  type: text("type", { enum: ["physical", "digital", "variable"] }).notNull().default("physical"),
+  status: text("status", { enum: ["draft", "published", "archived"] }).notNull().default("draft"),
+  price: integer("price").notNull().default(0),
+  salePrice: integer("sale_price"),
+  sku: text("sku"),
+  stock: integer("stock").notNull().default(0),
+  stockTracking: integer("stock_tracking", { mode: "boolean" }).notNull().default(false),
+  images: text("images").notNull().default("[]"),
+  categories: text("categories").notNull().default("[]"),
+  downloadFiles: text("download_files").notNull().default("[]"),
+  weight: integer("weight"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+
+export const productVariants = sqliteTable("product_variants", {
+  id: text("id").primaryKey(),
+  productId: text("product_id").notNull(),
+  name: text("name").notNull(),
+  sku: text("sku"),
+  price: integer("price").notNull().default(0),
+  salePrice: integer("sale_price"),
+  stock: integer("stock").notNull().default(0),
+  attributes: text("attributes").notNull().default("{}"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+
+export const orders = sqliteTable("orders", {
+  id: text("id").primaryKey(),
+  orderNumber: text("order_number").notNull().unique(),
+  status: text("status", { enum: ["pending", "processing", "completed", "cancelled", "refunded"] }).notNull().default("pending"),
+  customerEmail: text("customer_email").notNull(),
+  customerName: text("customer_name").notNull(),
+  billingAddress: text("billing_address").notNull().default("{}"),
+  shippingAddress: text("shipping_address").notNull().default("{}"),
+  items: text("items").notNull().default("[]"),
+  subtotal: integer("subtotal").notNull().default(0),
+  shippingCost: integer("shipping_cost").notNull().default(0),
+  tax: integer("tax").notNull().default(0),
+  total: integer("total").notNull().default(0),
+  paymentMethod: text("payment_method"),
+  paymentStatus: text("payment_status", { enum: ["unpaid", "paid", "refunded"] }).notNull().default("unpaid"),
+  paymentRef: text("payment_ref"),
+  notes: text("notes"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+
+export const digitalDeliveries = sqliteTable("digital_deliveries", {
+  id: text("id").primaryKey(),
+  orderId: text("order_id").notNull(),
+  productId: text("product_id").notNull(),
+  token: text("token").notNull().unique(),
+  downloadLimit: integer("download_limit").notNull().default(3),
+  downloadCount: integer("download_count").notNull().default(0),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});

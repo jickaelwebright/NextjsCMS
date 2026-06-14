@@ -67,6 +67,12 @@ function initTenantDb(db: Database.Database) {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS addon_settings (
+      key TEXT PRIMARY KEY,
+      enabled INTEGER NOT NULL DEFAULT 0,
+      config TEXT NOT NULL DEFAULT '{}',
+      enabled_at INTEGER
+    );
   `);
 }
 

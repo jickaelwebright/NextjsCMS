@@ -5,6 +5,7 @@ import { siteSettings } from "@/db/schema/tenant";
 import { eq } from "drizzle-orm";
 import type { PageDocument } from "@/types/page";
 import { PageRenderer } from "@/renderer/PageRenderer";
+import { CartIcon } from "@/components/frontend/CartIcon";
 
 async function getSiteName(tenantSlug: string): Promise<string> {
   try {
@@ -35,8 +36,9 @@ export default async function FrontendLayout({ children }: { children: React.Rea
       {headerDoc ? (
         <PageRenderer document={headerDoc} />
       ) : (
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <a href="/" className="text-xl font-bold text-gray-900">{siteName}</a>
+          <CartIcon />
         </header>
       )}
       <div className="flex-1">{children}</div>

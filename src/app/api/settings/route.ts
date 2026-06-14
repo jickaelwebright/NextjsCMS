@@ -13,6 +13,13 @@ export async function GET(req: NextRequest) {
   const all = await db.select().from(siteSettings);
   const result: Record<string, string> = {};
   all.forEach(({ key, value }) => { result[key] = value; });
+  const keysParam = req.nextUrl.searchParams.get("keys");
+  if (keysParam) {
+    const keys = keysParam.split(",");
+    const filtered: Record<string, string> = {};
+    keys.forEach((k) => { if (result[k] !== undefined) filtered[k] = result[k]; });
+    return NextResponse.json(filtered);
+  }
   return NextResponse.json(result);
 }
 

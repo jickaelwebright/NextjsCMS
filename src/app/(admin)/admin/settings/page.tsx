@@ -5,7 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Save, Eye, EyeOff, ExternalLink, Upload, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
-type Tab = "site" | "header" | "footer" | "ai" | "ftp";
+type Tab = "site" | "header" | "footer" | "ai" | "ftp" | "shop";
 
 interface AISettings {
   ai_openai_key: string;
@@ -224,6 +224,7 @@ export default function SettingsPage() {
     { id: "footer", label: "Footer Editor" },
     { id: "ai", label: "AI Integration" },
     { id: "ftp", label: "FTP Deploy" },
+    { id: "shop", label: "Shop" },
   ];
 
   return (
@@ -549,6 +550,77 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Shop Settings */}
+      {tab === "shop" && <ShopSettings />}
+    </div>
+  );
+}
+
+function ShopSettings() {
+  const [stripePublishable, setStripePublishable] = useState("");
+  const [stripeSecret, setStripeSecret] = useState("");
+  const [stripeWebhook, setStripeWebhook] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings?keys=stripe_publishable_key,stripe_secret_key,stripe_webhook_secret")
+      .then((r) => r.ok ? r.json() : {})
+      .then((d: Record<string, string>) => {
+        setStripePublishable(d.stripe_publishable_key ?? "");
+        setStripeSecret(d.stripe_secret_key ?? "");
+        setStripeWebhook(d.stripe_webhook_secret ?? "");
+      });
+  }, []);
+
+  async function save() {
+    setSaving(true);
+    await fetch("/api/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        stripe_publishable_key: stripePublishable,
+        stripe_secret_key: stripeSecret,
+        stripe_webhook_secret: stripeWebhook,
+      }),
+    });
+    toast.success("Shop settings saved");
+    setSaving(false);
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-5">
+      <div>
+        <h3 className="text-sm font-semibold text-gray-800 mb-1">Stripe Payments</h3>
+        <p className="text-xs text-gray-500 mb-4">Add your Stripe keys to enable credit card payments at checkout. Leave blank to use manual order processing.</p>
+        <div className="flex flex-col gap-3">
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Publishable Key</label>
+            <input className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="pk_live_..." value={stripePublishable} onChange={(e) => setStripePublishable(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Secret Key</label>
+            <input type="password" className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="sk_live_..." value={stripeSecret} onChange={(e) => setStripeSecret(e.target.value)} autoComplete="off" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Webhook Secret</label>
+            <input type="password" className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="whsec_..." value={stripeWebhook} onChange={(e) => setStripeWebhook(e.target.value)} autoComplete="off" />
+            <p className="text-xs text-gray-400 mt-1">
+              Register your webhook URL in Stripe: <code className="bg-gray-100 px-1 rounded">/api/checkout/webhook?tenant=YOUR_SLUG</code>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <button onClick={save} disabled={saving}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          Save Shop Settings
+        </button>
+      </div>
     </div>
   );
 }
