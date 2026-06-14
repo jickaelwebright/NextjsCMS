@@ -10,7 +10,7 @@
 !.yarn/versions
 
 # next.js
-/.next/
+# /.next/ — committed for cPanel deploy (no build step on server)
 /out/
 
 # production
