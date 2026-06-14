@@ -54,6 +54,31 @@ export async function updatePageContent(
     .where(eq(pages.id, id));
 }
 
+export async function updatePageMeta(
+  tenantSlug: string,
+  id: string,
+  meta: { title?: string; slug?: string; description?: string; ogImage?: string; noIndex?: boolean }
+) {
+  const db = getTenantDb(tenantSlug);
+  const page = await db.select().from(pages).where(eq(pages.id, id)).get();
+  if (!page) throw new Error("Page not found");
+
+  const doc: PageDocument = JSON.parse(page.content);
+  if (meta.title !== undefined) doc.meta.title = meta.title;
+  if (meta.description !== undefined) doc.meta.description = meta.description;
+  if (meta.ogImage !== undefined) doc.meta.ogImage = meta.ogImage;
+  if (meta.noIndex !== undefined) (doc.meta as any).noIndex = meta.noIndex;
+
+  const updates: Record<string, unknown> = {
+    content: JSON.stringify(doc),
+    updatedAt: new Date(),
+  };
+  if (meta.title !== undefined) updates.title = meta.title;
+  if (meta.slug !== undefined) updates.slug = meta.slug;
+
+  await db.update(pages).set(updates as any).where(eq(pages.id, id));
+}
+
 export async function publishPage(tenantSlug: string, id: string) {
   const db = getTenantDb(tenantSlug);
   const page = await db.select().from(pages).where(eq(pages.id, id)).get();

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface MediaItem { id: string; url: string; originalName: string; size: number; width?: number; height?: number; }
@@ -12,6 +12,7 @@ export default function MediaPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -30,6 +31,13 @@ export default function MediaPage() {
     if (r.ok) { toast.success("Uploaded"); load(); }
     else toast.error("Upload failed");
     setUploading(false);
+  }
+
+  async function deleteMedia(id: string) {
+    await fetch(`/api/media/${id}`, { method: "DELETE" });
+    setDeletingId(null);
+    toast.success("Deleted");
+    load();
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -86,9 +94,28 @@ export default function MediaPage() {
                 >
                   Copy URL
                 </button>
+                <button
+                  onClick={() => setDeletingId(item.id)}
+                  className="text-xs text-white bg-red-500/70 hover:bg-red-600/90 px-2 py-1 rounded flex items-center gap-1"
+                >
+                  <Trash2 size={10} /> Delete
+                </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {deletingId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+            <h2 className="text-lg font-semibold mb-2">Delete image?</h2>
+            <p className="text-sm text-gray-600 mb-4">This cannot be undone.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeletingId(null)} className="flex-1 px-4 py-2 border rounded-lg text-sm">Cancel</button>
+              <button onClick={() => deleteMedia(deletingId)} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium">Delete</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

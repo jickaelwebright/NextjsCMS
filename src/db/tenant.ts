@@ -2,6 +2,8 @@ import Database from "better-sqlite3";
 import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import path from "path";
 import * as schema from "./schema/tenant";
+import { generateId } from "@/lib/utils";
+import { STARTER_TEMPLATES } from "@/lib/starterTemplates";
 
 type TenantDb = BetterSQLite3Database<typeof schema>;
 
@@ -68,6 +70,18 @@ function initTenantDb(db: Database.Database) {
   `);
 }
 
+function seedStarterTemplates(sqlite: Database.Database) {
+  const count = (sqlite.prepare("SELECT COUNT(*) as n FROM templates").get() as { n: number }).n;
+  if (count > 0) return;
+  const now = Math.floor(Date.now() / 1000);
+  const stmt = sqlite.prepare(
+    "INSERT INTO templates (id, name, category, thumbnail, content, created_at) VALUES (?, ?, ?, NULL, ?, ?)"
+  );
+  for (const t of STARTER_TEMPLATES) {
+    stmt.run(generateId(), t.name, t.category, JSON.stringify(t.content), now);
+  }
+}
+
 export function getTenantDb(tenantSlug: string): TenantDb {
   if (cache.has(tenantSlug)) {
     return cache.get(tenantSlug)!;
@@ -76,6 +90,7 @@ export function getTenantDb(tenantSlug: string): TenantDb {
   const dbPath = path.join(process.cwd(), "data", `tenant-${tenantSlug}.db`);
   const sqlite = new Database(dbPath);
   initTenantDb(sqlite);
+  seedStarterTemplates(sqlite);
   const db = drizzle(sqlite, { schema });
   cache.set(tenantSlug, db);
   return db;

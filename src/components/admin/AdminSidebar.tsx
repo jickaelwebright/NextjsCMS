@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, FileText, BookOpen, Image,
-  Layout, Settings, LogOut, Layers,
+  Layout, Settings, LogOut, Layers, Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ const NAV = [
   { href: "/admin/posts",     label: "Blog Posts", icon: BookOpen },
   { href: "/admin/media",     label: "Media",      icon: Image },
   { href: "/admin/templates", label: "Templates",  icon: Layout },
+  { href: "/admin/forms",     label: "Forms",       icon: Inbox },
   { href: "/admin/settings",  label: "Settings",   icon: Settings },
 ] as const;
 

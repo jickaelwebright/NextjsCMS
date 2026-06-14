@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useBuilderStore, useBuilderHistory } from "@/builder/store/builderStore";
 import { DevicePreviewToggle } from "./DevicePreviewToggle";
 import { toast } from "sonner";
-import { Undo2, Redo2, Save, Eye, Loader2, BookmarkPlus, X } from "lucide-react";
+import { Undo2, Redo2, Save, Eye, Loader2, BookmarkPlus, X, Settings } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -14,10 +14,30 @@ interface BuilderToolbarProps {
 }
 
 export function BuilderToolbar({ pageId, pageTitle }: BuilderToolbarProps) {
-  const { document, isDirty, markSaved } = useBuilderStore();
+  const { document, isDirty, markSaved, updateMeta } = useBuilderStore();
   const { undo, redo, canUndo, canRedo } = useBuilderHistory();
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+
+  // Page settings modal
+  const [seoOpen, setSeoOpen] = useState(false);
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDesc, setSeoDesc] = useState("");
+  const [seoOg, setSeoOg] = useState("");
+  const [seoNoIndex, setSeoNoIndex] = useState(false);
+
+  function openSeo() {
+    setSeoTitle(document?.meta?.title ?? "");
+    setSeoDesc(document?.meta?.description ?? "");
+    setSeoOg(document?.meta?.ogImage ?? "");
+    setSeoNoIndex((document?.meta as any)?.noIndex ?? false);
+    setSeoOpen(true);
+  }
+
+  function saveSeo() {
+    updateMeta({ title: seoTitle, description: seoDesc, ogImage: seoOg, noIndex: seoNoIndex } as any);
+    setSeoOpen(false);
+  }
 
   // Save as template state
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
@@ -121,8 +141,54 @@ export function BuilderToolbar({ pageId, pageTitle }: BuilderToolbarProps) {
       {/* Device toggle */}
       <DevicePreviewToggle />
 
+      {/* Page Settings modal */}
+      {seoOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100]">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Page Settings</h2>
+              <button onClick={() => setSeoOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">Page Title</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">Meta Description</label>
+                <textarea rows={3} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                  value={seoDesc} onChange={(e) => setSeoDesc(e.target.value)}
+                  placeholder="Brief description for search engines (150–160 chars)" />
+                <p className="text-xs text-gray-400 mt-0.5">{seoDesc.length} chars</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">OG Image URL</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  value={seoOg} onChange={(e) => setSeoOg(e.target.value)} placeholder="/uploads/..." />
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={seoNoIndex} onChange={(e) => setSeoNoIndex(e.target.checked)} />
+                <span className="text-sm text-gray-700">No-index (hide from search engines)</span>
+              </label>
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button onClick={() => setSeoOpen(false)} className="flex-1 px-4 py-2 border rounded-lg text-sm">Cancel</button>
+              <button onClick={saveSeo} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="ml-auto flex items-center gap-2 relative">
         {isDirty && <span className="text-xs text-amber-600">Unsaved changes</span>}
+
+        {/* Page Settings */}
+        <button onClick={openSeo} title="Page Settings (SEO)" className="p-1.5 rounded hover:bg-gray-100 text-gray-500">
+          <Settings size={16} />
+        </button>
 
         {/* Save as Template */}
         <div className="relative">
