@@ -14,14 +14,15 @@ function checkWritable(dir: string): boolean {
   } catch { return false; }
 }
 
-function checkSQLite(): { ok: boolean; error?: string } {
+async function checkSQLite(): Promise<{ ok: boolean; error?: string }> {
   try {
-    const Database = require("better-sqlite3");
-    const db = new Database(":memory:");
-    db.exec("CREATE TABLE t (id INTEGER PRIMARY KEY); INSERT INTO t VALUES (1);");
-    const row = db.prepare("SELECT id FROM t").get();
-    db.close();
-    return { ok: row?.id === 1 };
+    const { createClient } = await import("@libsql/client");
+    const client = createClient({ url: "file::memory:" });
+    await client.execute("CREATE TABLE t (id INTEGER PRIMARY KEY)");
+    await client.execute("INSERT INTO t VALUES (1)");
+    const res = await client.execute("SELECT id FROM t");
+    client.close();
+    return { ok: res.rows[0]?.id === 1 };
   } catch (e: any) {
     return { ok: false, error: e?.message ?? String(e) };
   }
@@ -40,7 +41,7 @@ export async function GET() {
   const authUrl = process.env.NEXTAUTH_URL ?? "";
   const superAdminEmail = process.env.SUPERADMIN_EMAIL ?? "";
 
-  const sqlite = checkSQLite();
+  const sqlite = await checkSQLite();
   const checks = {
     nodeVersion: process.version,
     nodeVersionOk: nodeVersionOk(),

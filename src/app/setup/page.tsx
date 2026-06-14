@@ -223,9 +223,9 @@ export default function SetupPage() {
                   <Check ok={sysCheck.nodeVersionOk} label={`Node.js ${sysCheck.nodeVersion}`}
                     detail={sysCheck.nodeVersionOk ? "Version OK (18+ required)" : "Node.js 18 or higher required"}
                     fix="In cPanel → Node.js Selector → change version to 18.x or 20.x" />
-                  <Check ok={sysCheck.sqliteOk} label="SQLite (better-sqlite3)"
-                    detail={sysCheck.sqliteOk ? "Native module loaded" : (sysCheck.sqliteError ?? "Module failed to load")}
-                    fix="1. cd into app dir → activate virtualenv → npm rebuild better-sqlite3  2. Click Restart in cPanel Node.js Selector  3. Hit Re-run here" />
+                  <Check ok={sysCheck.sqliteOk} label="SQLite (@libsql/client)"
+                    detail={sysCheck.sqliteOk ? "WASM driver loaded" : (sysCheck.sqliteError ?? "Module failed to load")}
+                    fix="Run NPM Install in cPanel Node.js Selector, then Restart. No native compilation required." />
                   <Check ok={sysCheck.dataDirWritable} label="Data directory writable"
                     detail={sysCheck.dataDirPath}
                     fix={`Set DATA_DIR env var to a writable path outside public_html, e.g. /home/${sysCheck?.hostname?.split(".")[0] ?? "username"}/cms-data`} />
