@@ -27,7 +27,7 @@ const STEPS: { id: Step; label: string }[] = [
 
 interface SysCheck {
   nodeVersion: string; nodeVersionOk: boolean;
-  sqliteOk: boolean;
+  sqliteOk: boolean; sqliteError: string | null;
   dataDirPath: string; dataDirWritable: boolean;
   uploadsDirWritable: boolean;
   authSecretSet: boolean; authUrlSet: boolean; superadminEmailSet: boolean;
@@ -224,8 +224,8 @@ export default function SetupPage() {
                     detail={sysCheck.nodeVersionOk ? "Version OK (18+ required)" : "Node.js 18 or higher required"}
                     fix="In cPanel → Node.js Selector → change version to 18.x or 20.x" />
                   <Check ok={sysCheck.sqliteOk} label="SQLite (better-sqlite3)"
-                    detail={sysCheck.sqliteOk ? "Native module loaded" : "Module failed to load"}
-                    fix="Run: npm rebuild better-sqlite3 — or reinstall dependencies after selecting Node.js version in cPanel" />
+                    detail={sysCheck.sqliteOk ? "Native module loaded" : (sysCheck.sqliteError ?? "Module failed to load")}
+                    fix="1. cd into app dir → activate virtualenv → npm rebuild better-sqlite3  2. Click Restart in cPanel Node.js Selector  3. Hit Re-run here" />
                   <Check ok={sysCheck.dataDirWritable} label="Data directory writable"
                     detail={sysCheck.dataDirPath}
                     fix={`Set DATA_DIR env var to a writable path outside public_html, e.g. /home/${sysCheck?.hostname?.split(".")[0] ?? "username"}/cms-data`} />
