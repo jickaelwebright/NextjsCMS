@@ -9,6 +9,7 @@ const SUPERADMIN_EMAIL = process.env.SUPERADMIN_EMAIL ?? "admin@cms.local";
 const SUPERADMIN_PASSWORD = process.env.SUPERADMIN_PASSWORD ?? "changeme";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
