@@ -1,3 +1,7 @@
 export default function BuilderLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <div className="fixed inset-0 z-50 bg-white">
+      {children}
+    </div>
+  );
 }
