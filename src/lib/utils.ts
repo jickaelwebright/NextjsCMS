@@ -94,6 +94,20 @@ export function createBlock(type: BlockType): Block {
           rating: 5,
         },
       };
+    case "pricing":
+      return {
+        ...base,
+        type: "pricing",
+        props: {
+          heading: "Simple, Transparent Pricing",
+          subheading: "Choose the plan that works for you",
+          tiers: [
+            { name: "Basic", price: "$9", period: "/month", features: ["Feature 1", "Feature 2"], ctaLabel: "Get Started", ctaHref: "#", highlighted: false },
+            { name: "Pro", price: "$29", period: "/month", features: ["Feature 1", "Feature 2", "Feature 3"], ctaLabel: "Get Started", ctaHref: "#", highlighted: true, badge: "Popular" },
+            { name: "Enterprise", price: "Custom", period: "", features: ["Everything in Pro", "Priority Support", "Custom Integrations"], ctaLabel: "Contact Us", ctaHref: "#", highlighted: false },
+          ],
+        },
+      };
     default:
       return { ...base, type: "text", props: { content: "Block" } } as Block;
   }

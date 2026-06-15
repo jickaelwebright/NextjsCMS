@@ -6,6 +6,7 @@ import { BlockRenderer } from "@/renderer/BlockRenderer";
 import { InlineBlockEditor } from "./InlineBlockEditor";
 import { BlockToolbar } from "./BlockToolbar";
 import { cn } from "@/lib/utils";
+import { GripVertical } from "lucide-react";
 import type { Block, TextBlock, HeadingBlock } from "@/types/page";
 import type { DragData } from "@/types/builder";
 
@@ -63,8 +64,11 @@ export function CanvasBlock({ block, sectionId, columnId }: CanvasBlockProps) {
         <div
           {...attributes}
           {...listeners}
-          className="absolute top-0 right-0 p-1 cursor-grab active:cursor-grabbing z-20"
-        />
+          title="Drag to move"
+          className="absolute top-0 right-6 flex items-center justify-center w-6 h-6 bg-indigo-500 text-white rounded-bl cursor-grab active:cursor-grabbing z-20"
+        >
+          <GripVertical size={12} />
+        </div>
       )}
 
       {isEditing && isTextBlock ? (

@@ -31,7 +31,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
   const maxWClass = containerWidth[section.containerWidth ?? "xl"] ?? "max-w-screen-xl";
 
   return (
-    <section style={outerStyle} className="relative w-full">
+    <section id={section.anchorId || undefined} style={outerStyle} className="relative w-full">
       {(section.backgroundOverlay ?? 0) > 0 && (
         <div
           className="absolute inset-0 bg-black pointer-events-none"

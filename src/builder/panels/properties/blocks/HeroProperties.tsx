@@ -31,7 +31,8 @@ export function HeroProperties({ block }: { block: HeroBlock }) {
       <div>
         <label className="text-xs text-gray-600 block mb-1">CTA Link</label>
         <input className="w-full border rounded px-2 py-1.5 text-sm" value={p.ctaHref ?? ""}
-          onChange={(e) => updateBlock(block.id, { ctaHref: e.target.value })} placeholder="https://" />
+          onChange={(e) => updateBlock(block.id, { ctaHref: e.target.value })} placeholder="https:// or #section-id" />
+        <p className="text-xs text-gray-400 mt-0.5">Use <code className="bg-gray-100 px-0.5 rounded">#section-id</code> to scroll to a section below</p>
       </div>
       <div>
         <label className="text-xs text-gray-600 block mb-1">Background Image</label>

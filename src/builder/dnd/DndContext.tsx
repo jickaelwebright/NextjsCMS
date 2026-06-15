@@ -5,7 +5,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  pointerWithin,
 } from "@dnd-kit/core";
 import { useDragHandlers } from "./useDragHandlers";
 
@@ -18,7 +18,7 @@ export function BuilderDndContext({ children }: { children: React.ReactNode }) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={pointerWithin}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}

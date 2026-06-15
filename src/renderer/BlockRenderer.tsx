@@ -9,6 +9,7 @@ import { DividerRenderer } from "./blocks/DividerRenderer";
 import { SpacerRenderer } from "./blocks/SpacerRenderer";
 import { FormRenderer } from "./blocks/FormRenderer";
 import { TestimonialRenderer } from "./blocks/TestimonialRenderer";
+import { PricingTableRenderer } from "./blocks/PricingTableRenderer";
 import type { Block } from "@/types/page";
 
 interface BlockRendererProps {
@@ -29,6 +30,7 @@ export function BlockRenderer({ block, isEditing }: BlockRendererProps) {
     case "spacer":   return <SpacerRenderer block={block} />;
     case "form":         return <FormRenderer block={block} />;
     case "testimonial":  return <TestimonialRenderer block={block} />;
+    case "pricing":      return <PricingTableRenderer block={block} />;
     default:             return null;
   }
 }

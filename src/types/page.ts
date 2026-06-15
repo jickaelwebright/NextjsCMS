@@ -191,7 +191,8 @@ export type Block =
   | DividerBlock
   | SpacerBlock
   | FormBlock
-  | TestimonialBlock;
+  | TestimonialBlock
+  | PricingTableBlock;
 
 export type BlockType = Block["type"];
 
@@ -212,9 +213,32 @@ export interface Column {
   styles: ResponsiveStyle;
 }
 
+export interface PricingTier {
+  name: string;
+  price: string;
+  period?: string;
+  features: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  highlighted?: boolean;
+  badge?: string;
+}
+
+export interface PricingTableBlock {
+  id: NodeId;
+  type: "pricing";
+  props: {
+    heading?: string;
+    subheading?: string;
+    tiers: PricingTier[];
+  };
+  styles: ResponsiveStyle;
+}
+
 export interface Section {
   id: NodeId;
   label?: string;
+  anchorId?: string;
   columns: Column[];
   columnLayout: ColumnLayout;
   styles: ResponsiveStyle;

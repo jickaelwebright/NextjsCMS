@@ -12,6 +12,7 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
   { type: "spacer",   label: "Spacer",   icon: "Space",              category: "layout",      description: "Vertical spacer" },
   { type: "form",        label: "Form",        icon: "FormInput",   category: "interactive", description: "Contact form" },
   { type: "testimonial", label: "Testimonial", icon: "Quote",       category: "layout",      description: "Customer quote" },
+  { type: "pricing",     label: "Pricing",     icon: "Table",       category: "interactive", description: "Pricing table" },
 ];
 
 export function getBlockMeta(type: BlockType): BlockMeta | undefined {

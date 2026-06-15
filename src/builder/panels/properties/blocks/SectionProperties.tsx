@@ -2,15 +2,16 @@
 
 import { useBuilderStore } from "@/builder/store/builderStore";
 import { ColorPicker } from "../shared/ColorPicker";
+import { cn } from "@/lib/utils";
 import type { Section, ColumnLayout } from "@/types/page";
 
-const LAYOUTS: { value: ColumnLayout; label: string }[] = [
-  { value: "1",                   label: "1 Column" },
-  { value: "1/2+1/2",             label: "2 Equal" },
-  { value: "1/3+2/3",             label: "1/3 + 2/3" },
-  { value: "2/3+1/3",             label: "2/3 + 1/3" },
-  { value: "1/3+1/3+1/3",         label: "3 Equal" },
-  { value: "1/4+1/4+1/4+1/4",     label: "4 Equal" },
+const LAYOUTS: { value: ColumnLayout; spans: number[] }[] = [
+  { value: "1",                   spans: [12] },
+  { value: "1/2+1/2",             spans: [6, 6] },
+  { value: "1/3+2/3",             spans: [4, 8] },
+  { value: "2/3+1/3",             spans: [8, 4] },
+  { value: "1/3+1/3+1/3",         spans: [4, 4, 4] },
+  { value: "1/4+1/4+1/4+1/4",     spans: [3, 3, 3, 3] },
 ];
 
 const WIDTHS = ["sm","md","lg","xl","2xl","full"] as const;
@@ -27,14 +28,50 @@ export function SectionProperties({ section }: { section: Section }) {
           onChange={(e) => updateSection(section.id, { label: e.target.value })}
           placeholder="Section name" />
       </div>
+
       <div>
-        <label className="text-xs text-gray-600 block mb-1">Column Layout</label>
-        <select className="w-full border rounded px-2 py-1.5 text-sm"
-          value={section.columnLayout}
-          onChange={(e) => updateSection(section.id, { columnLayout: e.target.value as ColumnLayout })}>
-          {LAYOUTS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-        </select>
+        <label className="text-xs text-gray-600 block mb-1">Section ID (anchor link)</label>
+        <div className="flex items-center border rounded overflow-hidden focus-within:ring-2 focus-within:ring-blue-400">
+          <span className="px-2 py-1.5 text-sm text-gray-400 bg-gray-50 border-r select-none">#</span>
+          <input
+            className="flex-1 px-2 py-1.5 text-sm focus:outline-none"
+            value={section.anchorId ?? ""}
+            onChange={(e) => updateSection(section.id, { anchorId: e.target.value.toLowerCase().replace(/\s+/g, "-") })}
+            placeholder="pricing, contact, hero…" />
+        </div>
+        <p className="text-xs text-gray-400 mt-0.5">Link to this section with <code className="bg-gray-100 px-0.5 rounded">/#section-id</code></p>
       </div>
+
+      <div>
+        <label className="text-xs text-gray-600 block mb-2">Column Layout</label>
+        <div className="grid grid-cols-3 gap-1.5">
+          {LAYOUTS.map(({ value, spans }) => (
+            <button
+              key={value}
+              onClick={() => updateSection(section.id, { columnLayout: value })}
+              title={value}
+              className={cn(
+                "flex gap-0.5 items-stretch h-8 p-1.5 rounded border transition-colors",
+                section.columnLayout === value
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300 bg-white"
+              )}
+            >
+              {spans.map((span, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "rounded-sm",
+                    section.columnLayout === value ? "bg-blue-400" : "bg-gray-300"
+                  )}
+                  style={{ flex: span }}
+                />
+              ))}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div>
         <label className="text-xs text-gray-600 block mb-1">Container Width</label>
         <select className="w-full border rounded px-2 py-1.5 text-sm"
