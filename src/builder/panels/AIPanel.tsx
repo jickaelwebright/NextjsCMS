@@ -102,6 +102,9 @@ export function AIPanel() {
 
       if (mode === "page") {
         const doc = rehydrateDocumentIds(data.result as PageDocument);
+        // Preserve original slug/title — AI changes content, not page identity
+        if (storeDoc?.meta?.slug) doc.meta.slug = storeDoc.meta.slug;
+        if (storeDoc?.meta?.title) doc.meta.title = storeDoc.meta.title;
         setDocument(doc);
         markDirty();
         toast.success("Page generated! Review and save.");
