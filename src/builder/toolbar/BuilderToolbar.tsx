@@ -23,12 +23,14 @@ export function BuilderToolbar({ pageId, pageTitle, tenantSlug }: BuilderToolbar
   // Page settings modal
   const [seoOpen, setSeoOpen] = useState(false);
   const [seoTitle, setSeoTitle] = useState("");
+  const [seoSlug, setSeoSlug] = useState("");
   const [seoDesc, setSeoDesc] = useState("");
   const [seoOg, setSeoOg] = useState("");
   const [seoNoIndex, setSeoNoIndex] = useState(false);
 
   function openSeo() {
     setSeoTitle(document?.meta?.title ?? "");
+    setSeoSlug(document?.meta?.slug ?? "");
     setSeoDesc(document?.meta?.description ?? "");
     setSeoOg(document?.meta?.ogImage ?? "");
     setSeoNoIndex((document?.meta as any)?.noIndex ?? false);
@@ -36,7 +38,8 @@ export function BuilderToolbar({ pageId, pageTitle, tenantSlug }: BuilderToolbar
   }
 
   function saveSeo() {
-    updateMeta({ title: seoTitle, description: seoDesc, ogImage: seoOg, noIndex: seoNoIndex } as any);
+    const cleanSlug = seoSlug.toLowerCase().replace(/[^a-z0-9/-]/g, "-").replace(/^-+|-+$/g, "") || seoSlug;
+    updateMeta({ title: seoTitle, slug: cleanSlug, description: seoDesc, ogImage: seoOg, noIndex: seoNoIndex } as any);
     setSeoOpen(false);
   }
 
@@ -155,6 +158,16 @@ export function BuilderToolbar({ pageId, pageTitle, tenantSlug }: BuilderToolbar
                 <label className="text-xs font-medium text-gray-600 block mb-1">Page Title</label>
                 <input className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">Slug (URL path)</label>
+                <div className="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-400">
+                  <span className="px-2 py-2 text-sm text-gray-400 bg-gray-50 border-r select-none">/</span>
+                  <input className="flex-1 px-3 py-2 text-sm focus:outline-none"
+                    value={seoSlug} onChange={(e) => setSeoSlug(e.target.value)}
+                    placeholder="my-page-url" />
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">Lowercase letters, numbers, hyphens only</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-600 block mb-1">Meta Description</label>
