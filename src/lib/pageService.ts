@@ -50,7 +50,12 @@ export async function updatePageContent(
   const db = await getTenantDb(tenantSlug);
   await db
     .update(pages)
-    .set({ content: JSON.stringify(document), updatedAt: new Date() })
+    .set({
+      content: JSON.stringify(document),
+      title: document.meta.title || undefined,
+      slug: document.meta.slug || undefined,
+      updatedAt: new Date(),
+    })
     .where(eq(pages.id, id));
 }
 

@@ -246,7 +246,7 @@ export function BuilderToolbar({ pageId, pageTitle, tenantSlug }: BuilderToolbar
             href={`/${document.meta.slug}?tenant=${tenantSlug}`}
             target="_blank"
             rel="noopener noreferrer"
-            title="View published page"
+            title="View page"
             className="p-1.5 rounded hover:bg-gray-100 text-gray-500 flex items-center"
           >
             <ExternalLink size={16} />
