@@ -15,9 +15,10 @@ interface BuilderAppProps {
   pageId: string;
   pageTitle: string;
   initialDocument: PageDocument;
+  tenantSlug: string;
 }
 
-export function BuilderApp({ pageId, pageTitle, initialDocument }: BuilderAppProps) {
+export function BuilderApp({ pageId, pageTitle, initialDocument, tenantSlug }: BuilderAppProps) {
   const { setDocument, document: storeDoc, isDirty, deleteBlock, deleteSection, duplicateBlock } = useBuilderStore();
   const { selectedNodeId, selectedNodeType, editingBlockId, clearSelection } = useUIStore();
 
@@ -73,7 +74,7 @@ export function BuilderApp({ pageId, pageTitle, initialDocument }: BuilderAppPro
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
       <MediaPickerModal />
-      <BuilderToolbar pageId={pageId} pageTitle={pageTitle} />
+      <BuilderToolbar pageId={pageId} pageTitle={pageTitle} tenantSlug={tenantSlug} />
       <BuilderDndContext>
         <div className="flex flex-1 overflow-hidden">
           <div className="w-64 min-w-[220px] border-r border-gray-200 overflow-y-auto bg-white flex-shrink-0">

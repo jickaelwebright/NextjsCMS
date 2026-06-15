@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils";
 interface BuilderToolbarProps {
   pageId: string;
   pageTitle: string;
+  tenantSlug: string;
 }
 
-export function BuilderToolbar({ pageId, pageTitle }: BuilderToolbarProps) {
+export function BuilderToolbar({ pageId, pageTitle, tenantSlug }: BuilderToolbarProps) {
   const { document, isDirty, markSaved, updateMeta } = useBuilderStore();
   const { undo, redo, canUndo, canRedo } = useBuilderHistory();
   const [saving, setSaving] = useState(false);
@@ -242,7 +243,7 @@ export function BuilderToolbar({ pageId, pageTitle }: BuilderToolbarProps) {
         {/* View page */}
         {document?.meta?.slug && (
           <a
-            href={`/${document.meta.slug}`}
+            href={`/${document.meta.slug}?tenant=${tenantSlug}`}
             target="_blank"
             rel="noopener noreferrer"
             title="View published page"

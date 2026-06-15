@@ -21,6 +21,7 @@ export default async function BuilderPage({ params }: { params: Promise<{ pageId
         pageId={pageId}
         pageTitle={region === "header" ? "Header Editor" : "Footer Editor"}
         initialDocument={emptyDoc}
+        tenantSlug={tenantSlug}
       />
     );
   }
@@ -41,6 +42,7 @@ export default async function BuilderPage({ params }: { params: Promise<{ pageId
       pageId={pageId}
       pageTitle={page.title}
       initialDocument={document}
+      tenantSlug={tenantSlug}
     />
   );
 }

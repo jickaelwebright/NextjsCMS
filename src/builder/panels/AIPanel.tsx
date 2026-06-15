@@ -59,7 +59,7 @@ const EXAMPLE_PROMPTS = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function AIPanel() {
-  const { document: storeDoc, setDocument, addSection } = useBuilderStore();
+  const { document: storeDoc, setDocument, addSection, markDirty } = useBuilderStore();
 
   const [provider, setProvider] = useState<AIProvider>("openrouter");
   const [model, setModel] = useState<string>("google/gemini-2.0-flash-exp:free");
@@ -103,6 +103,7 @@ export function AIPanel() {
       if (mode === "page") {
         const doc = rehydrateDocumentIds(data.result as PageDocument);
         setDocument(doc);
+        markDirty();
         toast.success("Page generated! Review and save.");
       } else {
         const section = rehydrateSectionIds(data.result as Section);
