@@ -72,7 +72,7 @@ export default async function DashboardPage() {
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${page.status === "published" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
                     {page.status}
                   </span>
-                  <Link href={`/admin/builder/${page.id}`} className="text-xs text-blue-600 hover:underline">
+                  <Link href={`/builder/${page.id}`} className="text-xs text-blue-600 hover:underline">
                     Edit
                   </Link>
                 </div>

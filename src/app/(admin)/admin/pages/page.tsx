@@ -50,7 +50,7 @@ export default function PagesPage() {
     });
     if (r.ok) {
       const { id } = await r.json();
-      router.push(`/admin/builder/${id}`);
+      router.push(`/builder/${id}`);
     } else {
       toast.error("Failed to create page");
       setCreating(false);
@@ -175,7 +175,7 @@ export default function PagesPage() {
                 {page.status}
               </span>
               <div className="flex items-center gap-1">
-                <button onClick={() => router.push(`/admin/builder/${page.id}`)} title="Edit in Builder" className="p-1.5 hover:bg-gray-100 rounded">
+                <button onClick={() => router.push(`/builder/${page.id}`)} title="Edit in Builder" className="p-1.5 hover:bg-gray-100 rounded">
                   <Edit size={14} />
                 </button>
                 <button onClick={() => openSeo(page)} title="Page Settings (SEO)" className="p-1.5 hover:bg-gray-100 rounded">

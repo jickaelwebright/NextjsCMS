@@ -36,7 +36,7 @@ export default function PostsPage() {
     });
     if (r.ok) {
       const { id } = await r.json();
-      router.push(`/admin/builder/${id}`);
+      router.push(`/builder/${id}`);
     } else { toast.error("Failed"); setCreating(false); }
   }
 
@@ -108,7 +108,7 @@ export default function PostsPage() {
                 {post.status}
               </span>
               <div className="flex gap-1">
-                <button onClick={() => router.push(`/admin/builder/${post.id}`)} className="p-1.5 hover:bg-gray-100 rounded"><Edit size={14} /></button>
+                <button onClick={() => router.push(`/builder/${post.id}`)} className="p-1.5 hover:bg-gray-100 rounded"><Edit size={14} /></button>
                 <button onClick={() => togglePublish(post.id)} className="p-1.5 hover:bg-gray-100 rounded">
                   {post.status === "published" ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>

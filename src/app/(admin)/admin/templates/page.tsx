@@ -39,7 +39,7 @@ export default function TemplatesPage() {
     });
     if (r.ok) {
       const { id } = await r.json();
-      router.push(`/admin/builder/${id}`);
+      router.push(`/builder/${id}`);
     } else {
       toast.error("Failed to create page");
       setCreating(false);

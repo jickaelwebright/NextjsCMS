@@ -307,7 +307,7 @@ export default function SettingsPage() {
             Build your site {tab} using the visual editor.
           </p>
           <Link
-            href={`/admin/builder/global-${tab}`}
+            href={`/builder/global-${tab}`}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
           >
             Edit {tab.charAt(0).toUpperCase() + tab.slice(1)} in Builder →
