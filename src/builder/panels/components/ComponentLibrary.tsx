@@ -37,6 +37,7 @@ function DraggableWidget({ type, label, icon }: { type: BlockType; label: string
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      suppressHydrationWarning
       className={cn(
         "flex flex-col items-center gap-1 p-3 border rounded cursor-grab bg-white hover:border-blue-400 hover:bg-blue-50 transition-colors select-none",
         isDragging && "opacity-40 cursor-grabbing"
