@@ -33,11 +33,19 @@ export function proxy(request: NextRequest) {
     return response;
   }
 
-  // For the root domain, inject a default tenant slug from query or cookie
+  // Tenant from query param (?tenant=slug)
   const tenantFromQuery = request.nextUrl.searchParams.get("tenant");
   if (tenantFromQuery) {
     const response = NextResponse.next();
     response.headers.set("x-tenant-slug", tenantFromQuery);
+    return response;
+  }
+
+  // DEFAULT_TENANT env var fallback (local dev / single-tenant deploy)
+  const defaultTenant = process.env.DEFAULT_TENANT;
+  if (defaultTenant) {
+    const response = NextResponse.next();
+    response.headers.set("x-tenant-slug", defaultTenant);
     return response;
   }
 
