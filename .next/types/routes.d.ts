@@ -4,7 +4,7 @@
 type AppRoutes = "/" | "/[...slug]" | "/admin" | "/admin/addons" | "/admin/forms" | "/admin/media" | "/admin/orders" | "/admin/orders/[id]" | "/admin/pages" | "/admin/posts" | "/admin/products" | "/admin/products/[id]" | "/admin/settings" | "/admin/templates" | "/blog" | "/builder/[pageId]" | "/cart" | "/checkout" | "/checkout/payment" | "/checkout/success" | "/login" | "/products" | "/products/[slug]" | "/setup" | "/superadmin"
 type AppRouteHandlerRoutes = "/api/addons" | "/api/ai/generate-page" | "/api/auth/[...nextauth]" | "/api/checkout" | "/api/checkout/webhook" | "/api/deploy/ftp" | "/api/downloads/[token]" | "/api/forms" | "/api/forms/submissions" | "/api/global-regions" | "/api/media" | "/api/media/[id]" | "/api/media/upload" | "/api/orders" | "/api/orders/[id]" | "/api/pages" | "/api/pages/[id]" | "/api/pages/[id]/duplicate" | "/api/pages/[id]/publish" | "/api/products" | "/api/products/[id]" | "/api/products/[id]/variants" | "/api/settings" | "/api/setup" | "/api/setup/syscheck" | "/api/templates" | "/api/templates/[id]" | "/api/tenants" | "/api/tenants/[id]/activate" | "/api/tenants/[id]/suspend"
 type PageRoutes = never
-type LayoutRoutes = "/"
+type LayoutRoutes = "/" | "/builder"
 type RedirectRoutes = never
 type RewriteRoutes = never
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
@@ -56,6 +56,7 @@ interface ParamMap {
   "/api/tenants/[id]/activate": { "id": string; }
   "/api/tenants/[id]/suspend": { "id": string; }
   "/blog": {}
+  "/builder": {}
   "/builder/[pageId]": { "pageId": string; }
   "/cart": {}
   "/checkout": {}
@@ -73,6 +74,7 @@ export type ParamsOf<Route extends Routes> = ParamMap[Route]
 
 interface LayoutSlotMap {
   "/": never
+  "/builder": never
 }
 
 

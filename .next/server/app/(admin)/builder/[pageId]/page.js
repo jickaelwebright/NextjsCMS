@@ -1,6 +1,6 @@
 var R=require("../../../../chunks/ssr/[turbopack]_runtime.js")("server/app/(admin)/builder/[pageId]/page.js")
 R.c("server/chunks/ssr/[root-of-the-server]__1k0zbi3._.js")
-R.c("server/chunks/ssr/node_modules_next_dist_esm_build_templates_app-page_1m2u58r.js")
+R.c("server/chunks/ssr/node_modules_next_dist_esm_build_templates_app-page_1kr6ujl.js")
 R.c("server/chunks/ssr/_0t0eod5._.js")
 R.c("server/chunks/ssr/node_modules_next_dist_17i19if._.js")
 R.c("server/chunks/ssr/[root-of-the-server]__0zk4ryc._.js")
@@ -16,6 +16,7 @@ R.c("server/chunks/ssr/[root-of-the-server]__18-f-rq._.js")
 R.c("server/chunks/ssr/_0yx6mo0._.js")
 R.c("server/chunks/ssr/node_modules_0cls7jy._.js")
 R.c("server/chunks/ssr/node_modules_next_dist_0qf6a8v._.js")
+R.c("server/chunks/ssr/src_app_(admin)_builder_layout_tsx_0hl3j0b._.js")
 R.c("server/chunks/ssr/_next-internal_server_app_(admin)_builder_[pageId]_page_actions_0nk879t.js")
-R.m(50137)
-module.exports=R.m(50137).exports
+R.m(607)
+module.exports=R.m(607).exports

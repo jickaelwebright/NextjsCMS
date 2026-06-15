@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useBuilderStore, useBuilderHistory } from "@/builder/store/builderStore";
 import { DevicePreviewToggle } from "./DevicePreviewToggle";
 import { toast } from "sonner";
-import { Undo2, Redo2, Save, Eye, Loader2, BookmarkPlus, X, Settings } from "lucide-react";
+import { Undo2, Redo2, Save, Eye, ExternalLink, Loader2, BookmarkPlus, X, Settings } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -238,6 +238,19 @@ export function BuilderToolbar({ pageId, pageTitle }: BuilderToolbarProps) {
             </div>
           )}
         </div>
+
+        {/* View page */}
+        {document?.meta?.slug && (
+          <a
+            href={`/${document.meta.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View published page"
+            className="p-1.5 rounded hover:bg-gray-100 text-gray-500 flex items-center"
+          >
+            <ExternalLink size={16} />
+          </a>
+        )}
 
         {/* Save */}
         <button
