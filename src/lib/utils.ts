@@ -108,6 +108,37 @@ export function createBlock(type: BlockType): Block {
           ],
         },
       };
+    case "parallax":
+      return {
+        ...base,
+        type: "parallax",
+        props: {
+          backgroundImage: "",
+          speed: 40,
+          minHeight: "60vh",
+          heading: "A Powerful Statement",
+          subheading: "Your message here, supported by a stunning background",
+          overlayOpacity: 40,
+          textColor: "#ffffff",
+        },
+      };
+    case "slider":
+      return {
+        ...base,
+        type: "slider",
+        props: {
+          slides: [
+            { image: "", heading: "Slide One", subheading: "First slide description", ctaLabel: "Learn More", ctaHref: "#" },
+            { image: "", heading: "Slide Two", subheading: "Second slide description", ctaLabel: "Get Started", ctaHref: "#" },
+          ],
+          autoplay: true,
+          autoplayDelay: 4000,
+          showDots: true,
+          showArrows: true,
+          height: "500px",
+          overlayOpacity: 40,
+        },
+      };
     default:
       return { ...base, type: "text", props: { content: "Block" } } as Block;
   }

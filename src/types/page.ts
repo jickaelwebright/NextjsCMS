@@ -180,6 +180,42 @@ export interface TestimonialBlock {
   styles: ResponsiveStyle;
 }
 
+export interface ParallaxBlock {
+  id: NodeId;
+  type: "parallax";
+  props: {
+    backgroundImage: string;
+    speed?: number;
+    minHeight?: string;
+    heading?: string;
+    subheading?: string;
+    overlayOpacity?: number;
+    textColor?: string;
+  };
+  styles: ResponsiveStyle;
+}
+
+export interface SliderBlock {
+  id: NodeId;
+  type: "slider";
+  props: {
+    slides: Array<{
+      image: string;
+      heading?: string;
+      subheading?: string;
+      ctaLabel?: string;
+      ctaHref?: string;
+    }>;
+    autoplay?: boolean;
+    autoplayDelay?: number;
+    showDots?: boolean;
+    showArrows?: boolean;
+    height?: string;
+    overlayOpacity?: number;
+  };
+  styles: ResponsiveStyle;
+}
+
 export type Block =
   | TextBlock
   | HeadingBlock
@@ -192,7 +228,9 @@ export type Block =
   | SpacerBlock
   | FormBlock
   | TestimonialBlock
-  | PricingTableBlock;
+  | PricingTableBlock
+  | ParallaxBlock
+  | SliderBlock;
 
 export type BlockType = Block["type"];
 

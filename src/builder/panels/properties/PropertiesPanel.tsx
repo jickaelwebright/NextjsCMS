@@ -14,6 +14,8 @@ import { FormProperties } from "./blocks/FormProperties";
 import { DividerProperties } from "./blocks/DividerProperties";
 import { TestimonialProperties } from "./blocks/TestimonialProperties";
 import { PricingProperties } from "./blocks/PricingProperties";
+import { ParallaxProperties } from "./blocks/ParallaxProperties";
+import { SliderProperties } from "./blocks/SliderProperties";
 import { SectionProperties } from "./blocks/SectionProperties";
 import { Settings } from "lucide-react";
 import type { PageDocument, Block, Section } from "@/types/page";
@@ -32,6 +34,8 @@ function BlockPropertyRouter({ block }: { block: Block }) {
     case "divider":      return <DividerProperties block={block} />;
     case "testimonial":  return <TestimonialProperties block={block} />;
     case "pricing":      return <PricingProperties block={block} />;
+    case "parallax":     return <ParallaxProperties block={block} />;
+    case "slider":       return <SliderProperties block={block} />;
     default: return null;
   }
 }

@@ -1,0 +1,70 @@
+"use client";
+
+import { useBuilderStore } from "@/builder/store/builderStore";
+import { useUIStore } from "@/builder/store/uiStore";
+import { ImageIcon } from "lucide-react";
+import type { ParallaxBlock } from "@/types/page";
+
+export function ParallaxProperties({ block }: { block: ParallaxBlock }) {
+  const { updateBlock } = useBuilderStore();
+  const { openMediaPicker } = useUIStore();
+  const p = block.props;
+
+  return (
+    <div className="p-3 flex flex-col gap-3">
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Background Image</label>
+        <button
+          onClick={() => openMediaPicker(block.id, "backgroundImage")}
+          className="w-full flex items-center gap-2 border rounded px-2 py-1.5 text-sm hover:bg-gray-50 text-gray-700 mb-1"
+        >
+          <ImageIcon size={14} className="text-gray-400" />
+          {p.backgroundImage ? "Change image" : "Choose from library"}
+        </button>
+        <input
+          className="w-full border rounded px-2 py-1 text-xs text-gray-500"
+          value={p.backgroundImage ?? ""}
+          onChange={(e) => updateBlock(block.id, { backgroundImage: e.target.value })}
+          placeholder="or paste URL..." />
+      </div>
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Heading</label>
+        <input className="w-full border rounded px-2 py-1.5 text-sm"
+          value={p.heading ?? ""}
+          onChange={(e) => updateBlock(block.id, { heading: e.target.value })} />
+      </div>
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Subheading</label>
+        <textarea rows={2} className="w-full border rounded px-2 py-1.5 text-sm resize-none"
+          value={p.subheading ?? ""}
+          onChange={(e) => updateBlock(block.id, { subheading: e.target.value })} />
+      </div>
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Min Height</label>
+        <input className="w-full border rounded px-2 py-1.5 text-sm"
+          value={p.minHeight ?? "60vh"}
+          onChange={(e) => updateBlock(block.id, { minHeight: e.target.value })}
+          placeholder="60vh" />
+      </div>
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Parallax Speed ({p.speed ?? 40})</label>
+        <input type="range" min={0} max={100} step={5} className="w-full"
+          value={p.speed ?? 40}
+          onChange={(e) => updateBlock(block.id, { speed: Number(e.target.value) })} />
+        <p className="text-xs text-gray-400">0 = no movement, 100 = strong effect</p>
+      </div>
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Overlay Opacity ({p.overlayOpacity ?? 40}%)</label>
+        <input type="range" min={0} max={90} step={5} className="w-full"
+          value={p.overlayOpacity ?? 40}
+          onChange={(e) => updateBlock(block.id, { overlayOpacity: Number(e.target.value) })} />
+      </div>
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Text Color</label>
+        <input type="color" className="w-full h-8 rounded border cursor-pointer"
+          value={p.textColor ?? "#ffffff"}
+          onChange={(e) => updateBlock(block.id, { textColor: e.target.value })} />
+      </div>
+    </div>
+  );
+}

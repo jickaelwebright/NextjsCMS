@@ -10,6 +10,8 @@ import { SpacerRenderer } from "./blocks/SpacerRenderer";
 import { FormRenderer } from "./blocks/FormRenderer";
 import { TestimonialRenderer } from "./blocks/TestimonialRenderer";
 import { PricingTableRenderer } from "./blocks/PricingTableRenderer";
+import { ParallaxRenderer } from "./blocks/ParallaxRenderer";
+import { SliderRenderer } from "./blocks/SliderRenderer";
 import type { Block } from "@/types/page";
 
 interface BlockRendererProps {
@@ -31,6 +33,8 @@ export function BlockRenderer({ block, isEditing }: BlockRendererProps) {
     case "form":         return <FormRenderer block={block} />;
     case "testimonial":  return <TestimonialRenderer block={block} />;
     case "pricing":      return <PricingTableRenderer block={block} />;
+    case "parallax":     return <ParallaxRenderer block={block} />;
+    case "slider":       return <SliderRenderer block={block} />;
     default:             return null;
   }
 }

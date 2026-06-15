@@ -13,6 +13,8 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
   { type: "form",        label: "Form",        icon: "FormInput",   category: "interactive", description: "Contact form" },
   { type: "testimonial", label: "Testimonial", icon: "Quote",       category: "layout",      description: "Customer quote" },
   { type: "pricing",     label: "Pricing",     icon: "Table",       category: "interactive", description: "Pricing table" },
+  { type: "parallax",    label: "Parallax",    icon: "Layers",      category: "media",       description: "Parallax scroll background" },
+  { type: "slider",      label: "Slider",      icon: "GalleryHorizontal", category: "media", description: "Image carousel / slider" },
 ];
 
 export function getBlockMeta(type: BlockType): BlockMeta | undefined {
