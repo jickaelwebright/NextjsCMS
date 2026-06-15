@@ -46,7 +46,12 @@ export function CanvasBlock({ block, sectionId, columnId }: CanvasBlockProps) {
       )}
       onClick={(e) => {
         e.stopPropagation();
-        if (!isEditing) selectNode(block.id, "block");
+        if (isEditing) return;
+        if (isSelected && isTextBlock) {
+          setEditingBlock(block.id);
+        } else {
+          selectNode(block.id, "block");
+        }
       }}
       onDoubleClick={(e) => {
         e.stopPropagation();
@@ -62,7 +67,7 @@ export function CanvasBlock({ block, sectionId, columnId }: CanvasBlockProps) {
       {isSelected && !isEditing && isTextBlock && (
         <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-0.5 z-10 pointer-events-none">
           <span className="text-[10px] bg-indigo-500 text-white px-2 py-0.5 rounded-t-sm opacity-80">
-            double-click to edit
+            click to edit text
           </span>
         </div>
       )}
@@ -82,7 +87,7 @@ export function CanvasBlock({ block, sectionId, columnId }: CanvasBlockProps) {
         <InlineBlockEditor block={block as TextBlock | HeadingBlock} />
       ) : (
         <div className={cn("pointer-events-none", isSelected && "pointer-events-auto")}>
-          <BlockRenderer block={block} />
+          <BlockRenderer block={block} isBuilder />
         </div>
       )}
     </div>

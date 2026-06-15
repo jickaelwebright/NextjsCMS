@@ -16,6 +16,10 @@ import { TestimonialProperties } from "./blocks/TestimonialProperties";
 import { PricingProperties } from "./blocks/PricingProperties";
 import { ParallaxProperties } from "./blocks/ParallaxProperties";
 import { SliderProperties } from "./blocks/SliderProperties";
+import { FaqProperties } from "./blocks/FaqProperties";
+import { AccordionProperties } from "./blocks/AccordionProperties";
+import { EmbedProperties } from "./blocks/EmbedProperties";
+import { HtmlProperties } from "./blocks/HtmlProperties";
 import { SectionProperties } from "./blocks/SectionProperties";
 import { Settings } from "lucide-react";
 import type { PageDocument, Block, Section } from "@/types/page";
@@ -36,6 +40,10 @@ function BlockPropertyRouter({ block }: { block: Block }) {
     case "pricing":      return <PricingProperties block={block} />;
     case "parallax":     return <ParallaxProperties block={block} />;
     case "slider":       return <SliderProperties block={block} />;
+    case "faq":          return <FaqProperties block={block} />;
+    case "accordion":    return <AccordionProperties block={block} />;
+    case "embed":        return <EmbedProperties block={block} />;
+    case "html":         return <HtmlProperties block={block} />;
     default: return null;
   }
 }

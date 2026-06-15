@@ -119,6 +119,62 @@ export interface VideoBlock {
     loop?: boolean;
     muted?: boolean;
     controls?: boolean;
+    aspectRatio?: string;
+  };
+  styles: ResponsiveStyle;
+}
+
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface FaqBlock {
+  id: NodeId;
+  type: "faq";
+  props: {
+    heading?: string;
+    items: FaqItem[];
+  };
+  styles: ResponsiveStyle;
+}
+
+export interface AccordionItem {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export interface AccordionBlock {
+  id: NodeId;
+  type: "accordion";
+  props: {
+    items: AccordionItem[];
+    allowMultiple?: boolean;
+    style?: "default" | "bordered" | "flush";
+  };
+  styles: ResponsiveStyle;
+}
+
+export interface EmbedBlock {
+  id: NodeId;
+  type: "embed";
+  props: {
+    src: string;
+    height?: string;
+    title?: string;
+    scrolling?: boolean;
+  };
+  styles: ResponsiveStyle;
+}
+
+export interface HtmlBlock {
+  id: NodeId;
+  type: "html";
+  props: {
+    html: string;
+    wrapperClass?: string;
   };
   styles: ResponsiveStyle;
 }
@@ -231,7 +287,11 @@ export type Block =
   | TestimonialBlock
   | PricingTableBlock
   | ParallaxBlock
-  | SliderBlock;
+  | SliderBlock
+  | FaqBlock
+  | AccordionBlock
+  | EmbedBlock
+  | HtmlBlock;
 
 export type BlockType = Block["type"];
 

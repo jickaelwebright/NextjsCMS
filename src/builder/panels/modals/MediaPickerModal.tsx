@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useUIStore } from "@/builder/store/uiStore";
 import { useBuilderStore } from "@/builder/store/builderStore";
 import { X, ImageIcon, Loader2, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 interface MediaItem {
   id: string;
@@ -20,6 +21,7 @@ export function MediaPickerModal() {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function fetchMedia() {
@@ -45,9 +47,7 @@ export function MediaPickerModal() {
     closeMediaPicker();
   }
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function handleUploadFile(file: File) {
     setUploading(true);
     try {
       const form = new FormData();
@@ -55,7 +55,7 @@ export function MediaPickerModal() {
       const res = await fetch("/api/media/upload", { method: "POST", body: form });
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
-      // Auto-select the newly uploaded image
+      if (data.warning) toast.warning(data.warning);
       handleSelect(data.url);
     } catch {
       fetchMedia();
@@ -63,6 +63,19 @@ export function MediaPickerModal() {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  }
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await handleUploadFile(file);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleUploadFile(file);
   }
 
   const images = items.filter((m) => m.mimeType.startsWith("image/"));
@@ -73,9 +86,20 @@ export function MediaPickerModal() {
       onClick={closeMediaPicker}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl w-[720px] max-h-[580px] flex flex-col"
+        className="bg-white rounded-xl shadow-2xl w-[720px] max-h-[580px] flex flex-col relative"
         onClick={(e) => e.stopPropagation()}
+        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={handleDrop}
       >
+        {isDragOver && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-blue-500/20 border-4 border-dashed border-blue-500 rounded-xl pointer-events-none">
+            <div className="flex flex-col items-center gap-2 text-blue-700">
+              <Upload size={32} />
+              <span className="text-lg font-semibold">Drop image here</span>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
           <h2 className="font-semibold text-gray-900">Media Library</h2>

@@ -1,10 +1,13 @@
 "use client";
 
 import { useBuilderStore } from "@/builder/store/builderStore";
+import { useUIStore } from "@/builder/store/uiStore";
+import { ImageIcon } from "lucide-react";
 import type { TestimonialBlock } from "@/types/page";
 
 export function TestimonialProperties({ block }: { block: TestimonialBlock }) {
   const { updateBlock } = useBuilderStore();
+  const { openMediaPicker } = useUIStore();
   const p = block.props;
 
   return (
@@ -51,12 +54,19 @@ export function TestimonialProperties({ block }: { block: TestimonialBlock }) {
       </div>
 
       <div>
-        <label className="text-xs text-gray-600 block mb-1">Avatar URL</label>
+        <label className="text-xs text-gray-600 block mb-1">Avatar Image</label>
+        <button
+          onClick={() => openMediaPicker(block.id, "avatarUrl")}
+          className="w-full flex items-center gap-2 border rounded px-2 py-1.5 text-sm hover:bg-gray-50 text-gray-700 mb-1"
+        >
+          <ImageIcon size={14} className="text-gray-400" />
+          {p.avatarUrl ? "Change image" : "Choose from library"}
+        </button>
         <input
-          className="w-full border rounded px-2 py-1.5 text-sm"
+          className="w-full border rounded px-2 py-1 text-xs text-gray-500"
           value={p.avatarUrl ?? ""}
           onChange={(e) => updateBlock(block.id, { avatarUrl: e.target.value })}
-          placeholder="/uploads/tenant/avatar.webp"
+          placeholder="or paste URL..."
         />
       </div>
 

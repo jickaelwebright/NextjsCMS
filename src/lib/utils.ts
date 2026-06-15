@@ -139,6 +139,43 @@ export function createBlock(type: BlockType): Block {
           overlayOpacity: 40,
         },
       };
+    case "faq":
+      return {
+        ...base,
+        type: "faq",
+        props: {
+          heading: "Frequently Asked Questions",
+          items: [
+            { id: generateId(), question: "What is your refund policy?", answer: "We offer a full refund within 30 days of purchase." },
+            { id: generateId(), question: "How do I get support?", answer: "Contact us at support@example.com and we'll respond within 24 hours." },
+          ],
+        },
+      };
+    case "accordion":
+      return {
+        ...base,
+        type: "accordion",
+        props: {
+          items: [
+            { id: generateId(), title: "Section One", content: "Content for the first section goes here." },
+            { id: generateId(), title: "Section Two", content: "Content for the second section goes here." },
+          ],
+          allowMultiple: false,
+          style: "default",
+        },
+      };
+    case "embed":
+      return {
+        ...base,
+        type: "embed",
+        props: { src: "", height: "450px", title: "Embedded content", scrolling: false },
+      };
+    case "html":
+      return {
+        ...base,
+        type: "html",
+        props: { html: "<p>Your custom HTML here</p>", wrapperClass: "" },
+      };
     default:
       return { ...base, type: "text", props: { content: "Block" } } as Block;
   }

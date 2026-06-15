@@ -8,12 +8,14 @@ import type { DragData } from "@/types/builder";
 import {
   Heading, Type, Image, MousePointerClick, LayoutTemplate,
   CreditCard, Video, Minus, Space, FormInput, Quote, Table, Layers, GalleryHorizontal,
+  HelpCircle, ListCollapse, Code, Globe2,
 } from "lucide-react";
 
 type IconComponent = React.ComponentType<{ size?: number; className?: string }>;
 const ICONS: Record<string, IconComponent> = {
   Heading, Type, Image, MousePointerClick, LayoutTemplate, Table, Layers, GalleryHorizontal,
   CreditCard, Video, Minus, Space, FormInput, Quote,
+  HelpCircle, ListCollapse, Code, Globe2,
 };
 
 const CATEGORIES = [

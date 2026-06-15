@@ -31,12 +31,21 @@ export async function POST(req: NextRequest) {
   let width: number | undefined;
   let height: number | undefined;
 
+  let warning: string | undefined;
+
   if (file.type.startsWith("image/")) {
     const sharpImg = sharp(buffer);
     const meta = await sharpImg.metadata();
-    width = meta.width;
-    height = meta.height;
-    await sharpImg.webp({ quality: 85 }).toFile(filePath);
+    // Resize to max 1920px on either dimension, never upscale
+    const resized = sharpImg.resize(1920, 1920, { fit: "inside", withoutEnlargement: true });
+    const encoded = await resized.webp({ quality: 75 }).toBuffer({ resolveWithObject: true });
+    width = encoded.info.width;
+    height = encoded.info.height;
+    await require("fs/promises").writeFile(filePath, encoded.data);
+    const sizeKb = Math.round(encoded.data.byteLength / 1024);
+    if (sizeKb > 800) {
+      warning = `Image is large (${sizeKb}KB). Please optimise your image before uploading for better performance.`;
+    }
   } else {
     await writeFile(filePath, buffer);
   }
@@ -55,5 +64,5 @@ export async function POST(req: NextRequest) {
     createdAt: new Date(),
   });
 
-  return NextResponse.json({ id, url, width, height });
+  return NextResponse.json({ id, url, width, height, ...(warning ? { warning } : {}) });
 }

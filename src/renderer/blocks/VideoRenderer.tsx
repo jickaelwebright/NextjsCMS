@@ -21,10 +21,11 @@ function getEmbedUrl(url: string): string | null {
 export function VideoRenderer({ block }: { block: VideoBlock }) {
   const p = block.props;
   const embedUrl = getEmbedUrl(p.url);
+  const aspectStyle = { aspectRatio: p.aspectRatio ?? "16/9" };
 
   if (embedUrl) {
     return (
-      <div className="relative w-full aspect-video">
+      <div className="relative w-full" style={aspectStyle}>
         <iframe
           src={embedUrl}
           className="absolute inset-0 w-full h-full rounded"
@@ -37,7 +38,7 @@ export function VideoRenderer({ block }: { block: VideoBlock }) {
 
   if (p.url) {
     return (
-      <div className="w-full aspect-video">
+      <div className="w-full" style={aspectStyle}>
         <video
           src={p.url}
           controls={p.controls !== false}
@@ -51,7 +52,7 @@ export function VideoRenderer({ block }: { block: VideoBlock }) {
   }
 
   return (
-    <div className="w-full aspect-video bg-gray-200 rounded flex items-center justify-center text-gray-400 text-sm">
+    <div className="w-full bg-gray-200 rounded flex items-center justify-center text-gray-400 text-sm" style={aspectStyle}>
       No video URL set
     </div>
   );
