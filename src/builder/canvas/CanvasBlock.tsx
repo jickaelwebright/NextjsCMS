@@ -59,6 +59,13 @@ export function CanvasBlock({ block, sectionId, columnId }: CanvasBlockProps) {
       {isSelected && !isEditing && (
         <BlockToolbar block={block} sectionId={sectionId} columnId={columnId} />
       )}
+      {isSelected && !isEditing && isTextBlock && (
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-0.5 z-10 pointer-events-none">
+          <span className="text-[10px] bg-indigo-500 text-white px-2 py-0.5 rounded-t-sm opacity-80">
+            double-click to edit
+          </span>
+        </div>
+      )}
       {/* Drag handle — only on selected, non-editing block */}
       {isSelected && !isEditing && (
         <div

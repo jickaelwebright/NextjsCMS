@@ -10,6 +10,7 @@ interface UIState {
   previewDevice: PreviewDevice;
   isPreviewMode: boolean;
   dragOverColumnId: string | null;
+  activeDragLabel: string | null;
   // Inline text editing
   editingBlockId: string | null;
   // Media picker
@@ -26,6 +27,7 @@ interface UIActions {
   togglePreviewMode: () => void;
   setActiveLeftTab: (tab: LeftPanelTab) => void;
   setDragOverColumn: (id: string | null) => void;
+  setActiveDragLabel: (label: string | null) => void;
   // Inline text editing
   setEditingBlock: (id: string | null) => void;
   // Media picker
@@ -45,6 +47,7 @@ export const useUIStore = create<UIStore>()((set) => ({
   previewDevice: "desktop",
   isPreviewMode: false,
   dragOverColumnId: null,
+  activeDragLabel: null,
   editingBlockId: null,
   mediaPickerOpen: false,
   mediaPickerTarget: null,
@@ -64,6 +67,7 @@ export const useUIStore = create<UIStore>()((set) => ({
   setActiveLeftTab: (tab) => set({ activeLeftTab: tab }),
 
   setDragOverColumn: (id) => set({ dragOverColumnId: id }),
+  setActiveDragLabel: (label) => set({ activeDragLabel: label }),
 
   setEditingBlock: (id) => set({ editingBlockId: id }),
 

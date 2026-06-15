@@ -2,6 +2,7 @@ import type { DragEndEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core"
 import { createBlock } from "@/lib/utils";
 import { useBuilderStore } from "@/builder/store/builderStore";
 import { useUIStore } from "@/builder/store/uiStore";
+import { getBlockMeta } from "@/builder/dnd/blockRegistry";
 import type { DragData } from "@/types/builder";
 
 // ─── Over-id format ───────────────────────────────────────────────────────────
@@ -32,8 +33,14 @@ export function useDragHandlers() {
   const builderStore = useBuilderStore;
   const uiStore = useUIStore;
 
-  const onDragStart = (_event: DragStartEvent) => {
-    // Could be used to set a global "is dragging" flag if needed.
+  const onDragStart = (event: DragStartEvent) => {
+    const dragData = event.active.data.current as DragData | undefined;
+    if (dragData?.type === "NEW_BLOCK") {
+      const meta = getBlockMeta(dragData.blockType);
+      uiStore.getState().setActiveDragLabel(meta?.label ?? dragData.blockType);
+    } else if (dragData?.type === "EXISTING_BLOCK") {
+      uiStore.getState().setActiveDragLabel("Move block");
+    }
   };
 
   const onDragOver = (event: DragOverEvent) => {
@@ -44,8 +51,9 @@ export function useDragHandlers() {
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    // Always clear the drag-over highlight
+    // Always clear the drag-over highlight and overlay label
     uiStore.getState().setDragOverColumn(null);
+    uiStore.getState().setActiveDragLabel(null);
 
     if (!over) return;
 

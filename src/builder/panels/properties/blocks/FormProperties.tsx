@@ -110,6 +110,20 @@ export function FormProperties({ block }: { block: FormBlock }) {
                   Required
                 </label>
               </div>
+              <div className="flex gap-1 mt-1">
+                {(["full", "half"] as const).map((w) => (
+                  <button key={w}
+                    onClick={() => updateField(field.id, { span: w })}
+                    className={`flex-1 py-0.5 text-xs rounded border transition-colors ${
+                      (field.span ?? "full") === w
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-500 border-gray-300 hover:border-blue-300"
+                    }`}
+                  >
+                    {w === "full" ? "Full width" : "Half width"}
+                  </button>
+                ))}
+              </div>
               <input
                 className="mt-1.5 w-full border rounded px-2 py-1 text-xs"
                 value={field.placeholder ?? ""}

@@ -164,6 +164,7 @@ export interface FormField {
   placeholder?: string;
   required?: boolean;
   options?: string[];
+  span?: "full" | "half";
 }
 
 export interface TestimonialBlock {

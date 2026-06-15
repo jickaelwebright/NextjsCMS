@@ -40,8 +40,9 @@ export function FormRenderer({ block }: { block: FormBlock }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-6 border border-gray-200 rounded-lg bg-white">
+      <div className="grid grid-cols-2 gap-4">
       {fields.map((field: FormField) => (
-        <div key={field.id} className="flex flex-col gap-1">
+        <div key={field.id} className={`flex flex-col gap-1 ${field.span === "half" ? "col-span-1" : "col-span-2"}`}>
           <label className="text-sm font-medium text-gray-700">
             {field.label}{field.required && <span className="text-red-500 ml-0.5">*</span>}
           </label>
@@ -76,6 +77,7 @@ export function FormRenderer({ block }: { block: FormBlock }) {
           )}
         </div>
       ))}
+      </div>
       {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
         type="submit"

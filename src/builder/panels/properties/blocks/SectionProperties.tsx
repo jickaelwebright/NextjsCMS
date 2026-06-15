@@ -17,7 +17,7 @@ const LAYOUTS: { value: ColumnLayout; spans: number[] }[] = [
 const WIDTHS = ["sm","md","lg","xl","2xl","full"] as const;
 
 export function SectionProperties({ section }: { section: Section }) {
-  const { updateSection } = useBuilderStore();
+  const { updateSection, resizeSectionColumns } = useBuilderStore();
 
   return (
     <div className="p-3 flex flex-col gap-3">
@@ -48,7 +48,7 @@ export function SectionProperties({ section }: { section: Section }) {
           {LAYOUTS.map(({ value, spans }) => (
             <button
               key={value}
-              onClick={() => updateSection(section.id, { columnLayout: value })}
+              onClick={() => resizeSectionColumns(section.id, value)}
               title={value}
               className={cn(
                 "flex gap-0.5 items-stretch h-8 p-1.5 rounded border transition-colors",

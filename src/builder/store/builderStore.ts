@@ -1,15 +1,18 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { temporal } from "zundo";
-import { generateId } from "@/lib/utils";
+import { generateId, emptyStyles } from "@/lib/utils";
 import type {
   Block,
+  Column,
+  ColumnLayout,
   PageDocument,
   PageMeta,
   PageSettings,
   ResponsiveStyle,
   Section,
 } from "@/types/page";
+import { COLUMN_LAYOUT_SPANS } from "@/types/page";
 
 // ─── State shape ─────────────────────────────────────────────────────────────
 
@@ -29,6 +32,7 @@ interface BuilderActions {
   updateSection: (sectionId: string, updates: Partial<Section>) => void;
   deleteSection: (sectionId: string) => void;
   moveSections: (fromIndex: number, toIndex: number) => void;
+  resizeSectionColumns: (sectionId: string, newLayout: ColumnLayout) => void;
 
   // Block actions
   addBlock: (
@@ -146,6 +150,27 @@ export const useBuilderStore = create<BuilderStore>()(
             return;
           const [moved] = sections.splice(fromIndex, 1);
           sections.splice(toIndex, 0, moved);
+          state.isDirty = true;
+        }),
+
+      resizeSectionColumns: (sectionId, newLayout) =>
+        set((state) => {
+          if (!state.document) return;
+          const section = state.document.sections.find((s) => s.id === sectionId);
+          if (!section) return;
+          const newSpans = COLUMN_LAYOUT_SPANS[newLayout];
+          const oldColumns = section.columns as Column[];
+          // Build new columns, preserving existing blocks
+          const newColumns: Column[] = newSpans.map((span, i) => {
+            if (i < oldColumns.length) return { ...oldColumns[i], span };
+            return { id: generateId(), span, blocks: [], styles: emptyStyles() };
+          });
+          // Merge orphaned blocks into last column when reducing
+          for (let i = newSpans.length; i < oldColumns.length; i++) {
+            newColumns[newSpans.length - 1].blocks.push(...oldColumns[i].blocks);
+          }
+          section.columns = newColumns;
+          section.columnLayout = newLayout;
           state.isDirty = true;
         }),
 
