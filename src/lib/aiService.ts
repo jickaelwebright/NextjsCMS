@@ -1,9 +1,10 @@
-export type AIProvider = "openai" | "openrouter" | "nvidia-nim" | "gemini";
+export type AIProvider = "openai" | "openrouter" | "nvidia-nim" | "gemini" | "ollama";
 
 export interface AIProviderConfig {
   provider: AIProvider;
   apiKey: string;
   model: string;
+  baseUrl?: string;
 }
 
 // ─── Provider constants ───────────────────────────────────────────────────────
@@ -147,13 +148,16 @@ async function callOpenAICompatible(
   systemPrompt: string,
   userPrompt: string
 ): Promise<string> {
-  const baseUrl = OPENAI_COMPATIBLE_URLS[config.provider];
+  const baseUrl =
+    config.provider === "ollama"
+      ? `${(config.baseUrl ?? "http://localhost:11434").replace(/\/+$/, "")}/v1`
+      : OPENAI_COMPATIBLE_URLS[config.provider];
   const useJsonMode = JSON_MODE_PROVIDERS.has(config.provider);
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${config.apiKey}`,
-  };
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (config.provider !== "ollama") {
+    headers.Authorization = `Bearer ${config.apiKey}`;
+  }
 
   // OpenRouter requires these headers for routing and rate-limit tracking
   if (config.provider === "openrouter") {

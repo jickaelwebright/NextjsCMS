@@ -14,6 +14,12 @@ interface AISettings {
   ai_gemini_key: string;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function safeParseJson(s: string | undefined): string[] {
+  try { return JSON.parse(s ?? "[]"); } catch { return []; }
+}
+
 function MaskedInput({
   label,
   value,
@@ -53,6 +59,87 @@ function MaskedInput({
   );
 }
 
+function AITestStatus({ state, error }: { state: string; error: string }) {
+  if (state === "idle") return null;
+  if (state === "testing") {
+    return (
+      <span className="text-xs text-gray-400 flex items-center gap-1">
+        <Loader2 size={11} className="animate-spin" /> Testing…
+      </span>
+    );
+  }
+  if (state === "ok") {
+    return (
+      <span className="text-xs text-green-600 flex items-center gap-1">
+        <CheckCircle size={11} /> Connected ✓
+      </span>
+    );
+  }
+  return (
+    <span className="text-xs text-red-600 flex items-center gap-1 truncate max-w-[220px]" title={error}>
+      <XCircle size={11} className="shrink-0" /> {error.slice(0, 80)}
+    </span>
+  );
+}
+
+function CustomModelEditor({
+  models,
+  onUpdate,
+}: {
+  models: string[];
+  onUpdate: (models: string[]) => void;
+}) {
+  const [input, setInput] = useState("");
+
+  function add() {
+    const v = input.trim();
+    if (!v || models.includes(v)) return;
+    onUpdate([...models, v]);
+    setInput("");
+  }
+
+  return (
+    <div>
+      <p className="text-xs text-gray-500 font-medium mb-1.5">Custom Model IDs</p>
+      {models.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-1.5">
+          {models.map((m) => (
+            <span key={m} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-mono">
+              {m}
+              <button
+                type="button"
+                onClick={() => onUpdate(models.filter((x) => x !== m))}
+                className="text-gray-400 hover:text-red-500 leading-none"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-1.5">
+        <input
+          className="flex-1 border rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-400"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          placeholder="model-id"
+        />
+        <button
+          type="button"
+          onClick={add}
+          disabled={!input.trim()}
+          className="px-2.5 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg disabled:opacity-40 font-medium"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── FTP types ────────────────────────────────────────────────────────────────
+
 interface FTPSettings {
   ftp_host: string;
   ftp_port: string;
@@ -63,6 +150,8 @@ interface FTPSettings {
 }
 
 type DeployLogEntry = { slug: string; ok: boolean; message: string };
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
   const [siteName, setSiteName] = useState("");
@@ -80,6 +169,13 @@ export default function SettingsPage() {
     ai_nim_key: "",
     ai_gemini_key: "",
   });
+  const [ollamaUrl, setOllamaUrl] = useState("");
+  const [customModels, setCustomModels] = useState<Record<string, string[]>>({
+    openai: [], openrouter: [], "nvidia-nim": [], gemini: [], ollama: [],
+  });
+  const [aiTestState, setAiTestState] = useState<Record<string, string>>({});
+  const [aiTestError, setAiTestError] = useState<Record<string, string>>({});
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [savingAI, setSavingAI] = useState(false);
 
   // FTP settings
@@ -113,6 +209,14 @@ export default function SettingsPage() {
           ai_nim_key: data.ai_nim_key ?? "",
           ai_gemini_key: data.ai_gemini_key ?? "",
         });
+        setOllamaUrl(data.ai_ollama_url ?? "");
+        setCustomModels({
+          openai: safeParseJson(data.ai_openai_custom_models),
+          openrouter: safeParseJson(data.ai_openrouter_custom_models),
+          "nvidia-nim": safeParseJson(data.ai_nim_custom_models),
+          gemini: safeParseJson(data.ai_gemini_custom_models),
+          ollama: safeParseJson(data.ai_ollama_custom_models),
+        });
         setFtp({
           ftp_host: data.ftp_host ?? "",
           ftp_port: data.ftp_port ?? "21",
@@ -136,19 +240,49 @@ export default function SettingsPage() {
     setSaving(false);
   }
 
+  async function testAIKey(provider: string, key: string) {
+    setAiTestState((s) => ({ ...s, [provider]: "testing" }));
+    setAiTestError((s) => ({ ...s, [provider]: "" }));
+    if (provider === "ollama") setOllamaModels([]);
+    try {
+      const r = await fetch("/api/ai/test-connection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider, key }),
+      });
+      const data = await r.json();
+      if (data.ok) {
+        setAiTestState((s) => ({ ...s, [provider]: "ok" }));
+        if (data.models?.length) setOllamaModels(data.models);
+      } else {
+        setAiTestState((s) => ({ ...s, [provider]: "error" }));
+        setAiTestError((s) => ({ ...s, [provider]: data.error ?? "Connection failed" }));
+      }
+    } catch {
+      setAiTestState((s) => ({ ...s, [provider]: "error" }));
+      setAiTestError((s) => ({ ...s, [provider]: "Network error" }));
+    }
+  }
+
   async function saveAISettings() {
     setSavingAI(true);
-    // Only send non-empty keys to avoid overwriting with empty string
     const payload: Record<string, string> = {};
     for (const [k, v] of Object.entries(aiKeys)) {
       if (v.trim()) payload[k] = v.trim();
     }
+    if (ollamaUrl.trim()) payload.ai_ollama_url = ollamaUrl.trim();
+    else payload.ai_ollama_url = "";
+    payload.ai_openai_custom_models = JSON.stringify(customModels.openai ?? []);
+    payload.ai_openrouter_custom_models = JSON.stringify(customModels.openrouter ?? []);
+    payload.ai_nim_custom_models = JSON.stringify(customModels["nvidia-nim"] ?? []);
+    payload.ai_gemini_custom_models = JSON.stringify(customModels.gemini ?? []);
+    payload.ai_ollama_custom_models = JSON.stringify(customModels.ollama ?? []);
     await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    toast.success("AI keys saved");
+    toast.success("AI settings saved");
     setSavingAI(false);
   }
 
@@ -317,78 +451,201 @@ export default function SettingsPage() {
 
       {/* AI Integration */}
       {tab === "ai" && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
           <div>
             <h2 className="text-base font-semibold text-gray-900 mb-1">AI Page Generator</h2>
             <p className="text-sm text-gray-500">
-              Add API keys for the providers you want to use. Keys are encrypted and stored in your
-              tenant database — never shared or sent to third parties. You only need one provider to get started.
+              Add API keys for the providers you want to use. Keys are stored in your tenant database.
+              You only need one provider to get started.
             </p>
           </div>
 
-          <MaskedInput
-            label="OpenAI API Key"
-            value={aiKeys.ai_openai_key}
-            onChange={(v) => setAiKeys((k) => ({ ...k, ai_openai_key: v }))}
-            placeholder="sk-..."
-            helpText={
-              <>
-                Get a key at{" "}
-                <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">
-                  platform.openai.com <ExternalLink size={10} />
-                </a>
-                . Models: GPT-4o, GPT-4o Mini.
-              </>
-            }
-          />
+          {/* OpenAI */}
+          <div className="flex flex-col gap-2 border border-gray-100 rounded-lg p-4">
+            <MaskedInput
+              label="OpenAI API Key"
+              value={aiKeys.ai_openai_key}
+              onChange={(v) => setAiKeys((k) => ({ ...k, ai_openai_key: v }))}
+              placeholder="sk-..."
+              helpText={
+                <>
+                  Get a key at{" "}
+                  <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">
+                    platform.openai.com <ExternalLink size={10} />
+                  </a>
+                  . Models: GPT-4o, GPT-4o Mini.
+                </>
+              }
+            />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => testAIKey("openai", aiKeys.ai_openai_key)}
+                disabled={!aiKeys.ai_openai_key.trim() || aiTestState.openai === "testing"}
+                className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 disabled:opacity-40 flex items-center gap-1.5"
+              >
+                {aiTestState.openai === "testing" && <Loader2 size={11} className="animate-spin" />}
+                Test Connection
+              </button>
+              <AITestStatus state={aiTestState.openai ?? "idle"} error={aiTestError.openai ?? ""} />
+            </div>
+            <CustomModelEditor
+              models={customModels.openai ?? []}
+              onUpdate={(m) => setCustomModels((c) => ({ ...c, openai: m }))}
+            />
+          </div>
 
-          <MaskedInput
-            label="OpenRouter API Key"
-            value={aiKeys.ai_openrouter_key}
-            onChange={(v) => setAiKeys((k) => ({ ...k, ai_openrouter_key: v }))}
-            placeholder="sk-or-..."
-            helpText={
-              <>
-                Get a key at{" "}
-                <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">
-                  openrouter.ai <ExternalLink size={10} />
-                </a>
-                . Includes free-tier models (Gemini Flash, Llama 3.3, Mistral).
-              </>
-            }
-          />
+          {/* OpenRouter */}
+          <div className="flex flex-col gap-2 border border-gray-100 rounded-lg p-4">
+            <MaskedInput
+              label="OpenRouter API Key"
+              value={aiKeys.ai_openrouter_key}
+              onChange={(v) => setAiKeys((k) => ({ ...k, ai_openrouter_key: v }))}
+              placeholder="sk-or-..."
+              helpText={
+                <>
+                  Get a key at{" "}
+                  <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">
+                    openrouter.ai <ExternalLink size={10} />
+                  </a>
+                  . Includes free-tier models (Gemini Flash, Llama 3.3, Mistral).
+                </>
+              }
+            />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => testAIKey("openrouter", aiKeys.ai_openrouter_key)}
+                disabled={!aiKeys.ai_openrouter_key.trim() || aiTestState.openrouter === "testing"}
+                className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 disabled:opacity-40 flex items-center gap-1.5"
+              >
+                {aiTestState.openrouter === "testing" && <Loader2 size={11} className="animate-spin" />}
+                Test Connection
+              </button>
+              <AITestStatus state={aiTestState.openrouter ?? "idle"} error={aiTestError.openrouter ?? ""} />
+            </div>
+            <CustomModelEditor
+              models={customModels.openrouter ?? []}
+              onUpdate={(m) => setCustomModels((c) => ({ ...c, openrouter: m }))}
+            />
+          </div>
 
-          <MaskedInput
-            label="NVIDIA NIM API Key"
-            value={aiKeys.ai_nim_key}
-            onChange={(v) => setAiKeys((k) => ({ ...k, ai_nim_key: v }))}
-            placeholder="nvapi-..."
-            helpText={
-              <>
-                Get a key at{" "}
-                <a href="https://build.nvidia.com" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">
-                  build.nvidia.com <ExternalLink size={10} />
-                </a>
-                . Free trial credits included. Models: Llama 3.3, Nemotron.
-              </>
-            }
-          />
+          {/* NVIDIA NIM */}
+          <div className="flex flex-col gap-2 border border-gray-100 rounded-lg p-4">
+            <MaskedInput
+              label="NVIDIA NIM API Key"
+              value={aiKeys.ai_nim_key}
+              onChange={(v) => setAiKeys((k) => ({ ...k, ai_nim_key: v }))}
+              placeholder="nvapi-..."
+              helpText={
+                <>
+                  Get a key at{" "}
+                  <a href="https://build.nvidia.com" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">
+                    build.nvidia.com <ExternalLink size={10} />
+                  </a>
+                  . Free trial credits included. Models: Llama 3.3, Nemotron.
+                </>
+              }
+            />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => testAIKey("nvidia-nim", aiKeys.ai_nim_key)}
+                disabled={!aiKeys.ai_nim_key.trim() || aiTestState["nvidia-nim"] === "testing"}
+                className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 disabled:opacity-40 flex items-center gap-1.5"
+              >
+                {aiTestState["nvidia-nim"] === "testing" && <Loader2 size={11} className="animate-spin" />}
+                Test Connection
+              </button>
+              <AITestStatus state={aiTestState["nvidia-nim"] ?? "idle"} error={aiTestError["nvidia-nim"] ?? ""} />
+            </div>
+            <CustomModelEditor
+              models={customModels["nvidia-nim"] ?? []}
+              onUpdate={(m) => setCustomModels((c) => ({ ...c, "nvidia-nim": m }))}
+            />
+          </div>
 
-          <MaskedInput
-            label="Google Gemini API Key"
-            value={aiKeys.ai_gemini_key}
-            onChange={(v) => setAiKeys((k) => ({ ...k, ai_gemini_key: v }))}
-            placeholder="AIza..."
-            helpText={
-              <>
-                Get a free key at{" "}
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">
-                  aistudio.google.com <ExternalLink size={10} />
-                </a>
-                . Gemini 2.0 Flash is fast and free-tier eligible.
-              </>
-            }
-          />
+          {/* Google Gemini */}
+          <div className="flex flex-col gap-2 border border-gray-100 rounded-lg p-4">
+            <MaskedInput
+              label="Google Gemini API Key"
+              value={aiKeys.ai_gemini_key}
+              onChange={(v) => setAiKeys((k) => ({ ...k, ai_gemini_key: v }))}
+              placeholder="AIza..."
+              helpText={
+                <>
+                  Get a free key at{" "}
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">
+                    aistudio.google.com <ExternalLink size={10} />
+                  </a>
+                  . Gemini 2.0 Flash is fast and free-tier eligible.
+                </>
+              }
+            />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => testAIKey("gemini", aiKeys.ai_gemini_key)}
+                disabled={!aiKeys.ai_gemini_key.trim() || aiTestState.gemini === "testing"}
+                className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 disabled:opacity-40 flex items-center gap-1.5"
+              >
+                {aiTestState.gemini === "testing" && <Loader2 size={11} className="animate-spin" />}
+                Test Connection
+              </button>
+              <AITestStatus state={aiTestState.gemini ?? "idle"} error={aiTestError.gemini ?? ""} />
+            </div>
+            <CustomModelEditor
+              models={customModels.gemini ?? []}
+              onUpdate={(m) => setCustomModels((c) => ({ ...c, gemini: m }))}
+            />
+          </div>
+
+          {/* Ollama */}
+          <div className="flex flex-col gap-2 border border-gray-100 rounded-lg p-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">Ollama URL</label>
+              <input
+                type="text"
+                className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={ollamaUrl}
+                onChange={(e) => setOllamaUrl(e.target.value)}
+                placeholder="http://localhost:11434"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                No API key needed — Ollama runs locally or on a reachable server.
+                If Ollama is on a different host, set{" "}
+                <code className="bg-gray-100 px-1 rounded">OLLAMA_ORIGINS=*</code>.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => testAIKey("ollama", ollamaUrl)}
+                disabled={!ollamaUrl.trim() || aiTestState.ollama === "testing"}
+                className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 disabled:opacity-40 flex items-center gap-1.5"
+              >
+                {aiTestState.ollama === "testing" && <Loader2 size={11} className="animate-spin" />}
+                Test & Fetch Models
+              </button>
+              <AITestStatus state={aiTestState.ollama ?? "idle"} error={aiTestError.ollama ?? ""} />
+            </div>
+            {ollamaModels.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-500 mb-1.5">Installed models:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {ollamaModels.map((m) => (
+                    <span key={m} className="text-xs font-mono bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <CustomModelEditor
+              models={customModels.ollama ?? []}
+              onUpdate={(m) => setCustomModels((c) => ({ ...c, ollama: m }))}
+            />
+          </div>
 
           <button
             onClick={saveAISettings}
@@ -396,7 +653,7 @@ export default function SettingsPage() {
             className="flex items-center gap-2 self-start px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
           >
             <Save size={14} />
-            {savingAI ? "Saving…" : "Save AI Keys"}
+            {savingAI ? "Saving…" : "Save AI Settings"}
           </button>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
@@ -515,9 +772,7 @@ export default function SettingsPage() {
           {/* Test result */}
           {ftpTestResult && (
             <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${ftpTestResult.ok ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
-              {ftpTestResult.ok
-                ? <CheckCircle size={16} />
-                : <XCircle size={16} />}
+              {ftpTestResult.ok ? <CheckCircle size={16} /> : <XCircle size={16} />}
               {ftpTestResult.message}
             </div>
           )}

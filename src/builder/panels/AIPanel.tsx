@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBuilderStore } from "@/builder/store/builderStore";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Plus, RefreshCw, AlertTriangle, ExternalLink } from "lucide-react";
+import { Sparkles, Loader2, Plus, AlertTriangle, ExternalLink } from "lucide-react";
 import { rehydrateDocumentIds, rehydrateSectionIds } from "@/lib/utils";
 import type { PageDocument, Section } from "@/types/page";
 import type { AIProvider } from "@/lib/aiService";
@@ -17,6 +17,7 @@ const PROVIDERS: { value: AIProvider; label: string }[] = [
   { value: "openrouter", label: "OpenRouter" },
   { value: "nvidia-nim", label: "NVIDIA NIM" },
   { value: "gemini", label: "Google Gemini" },
+  { value: "ollama", label: "Ollama (local)" },
 ];
 
 const MODELS: Record<AIProvider, ModelOption[]> = {
@@ -46,7 +47,21 @@ const MODELS: Record<AIProvider, ModelOption[]> = {
     { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
     { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
   ],
+  ollama: [
+    { value: "llama3.2", label: "Llama 3.2" },
+    { value: "llama3.1", label: "Llama 3.1" },
+    { value: "mistral", label: "Mistral" },
+    { value: "gemma3", label: "Gemma 3" },
+  ],
 };
+
+const CUSTOM_MODEL_KEYS: [AIProvider, string][] = [
+  ["openai", "ai_openai_custom_models"],
+  ["openrouter", "ai_openrouter_custom_models"],
+  ["nvidia-nim", "ai_nim_custom_models"],
+  ["gemini", "ai_gemini_custom_models"],
+  ["ollama", "ai_ollama_custom_models"],
+];
 
 const EXAMPLE_PROMPTS = [
   "Landing page for a fitness studio with hero, class schedule, trainer profiles, and contact form",
@@ -67,10 +82,58 @@ export function AIPanel() {
   const [loading, setLoading] = useState(false);
   const [missingKey, setMissingKey] = useState(false);
 
-  // Sync model when provider changes
+  const [configuredProviders, setConfiguredProviders] = useState<Set<AIProvider>>(new Set());
+  const [customModels, setCustomModels] = useState<Record<string, string[]>>({});
+  const [providersLoaded, setProvidersLoaded] = useState(false);
+
+  useEffect(() => {
+    const keys = [
+      "ai_openai_key", "ai_openrouter_key", "ai_nim_key", "ai_gemini_key", "ai_ollama_url",
+      ...CUSTOM_MODEL_KEYS.map(([, k]) => k),
+    ].join(",");
+
+    fetch(`/api/settings?keys=${keys}`)
+      .then((r) => r.json())
+      .then((data: Record<string, string>) => {
+        const configured = new Set<AIProvider>();
+        if (data.ai_openai_key?.trim()) configured.add("openai");
+        if (data.ai_openrouter_key?.trim()) configured.add("openrouter");
+        if (data.ai_nim_key?.trim()) configured.add("nvidia-nim");
+        if (data.ai_gemini_key?.trim()) configured.add("gemini");
+        if (data.ai_ollama_url?.trim()) configured.add("ollama");
+        setConfiguredProviders(configured);
+
+        const custom: Record<string, string[]> = {};
+        for (const [p, k] of CUSTOM_MODEL_KEYS) {
+          try { custom[p] = JSON.parse(data[k] ?? "[]"); } catch { custom[p] = []; }
+        }
+        setCustomModels(custom);
+
+        if (configured.size > 0) {
+          const first = [...configured][0];
+          setProvider(first);
+          setModel(MODELS[first][0]?.value ?? "");
+        }
+        setProvidersLoaded(true);
+      })
+      .catch(() => setProvidersLoaded(true));
+  }, []);
+
+  const filteredProviders =
+    providersLoaded && configuredProviders.size > 0
+      ? PROVIDERS.filter((p) => configuredProviders.has(p.value))
+      : PROVIDERS;
+
+  const allModels: ModelOption[] = [
+    ...(MODELS[provider] ?? []),
+    ...(customModels[provider] ?? []).map((v) => ({ value: v, label: v })),
+  ];
+
+  const noProviders = providersLoaded && configuredProviders.size === 0;
+
   function handleProviderChange(p: AIProvider) {
     setProvider(p);
-    setModel(MODELS[p][0].value);
+    setModel(MODELS[p][0]?.value ?? "");
     setMissingKey(false);
   }
 
@@ -102,7 +165,6 @@ export function AIPanel() {
 
       if (mode === "page") {
         const doc = rehydrateDocumentIds(data.result as PageDocument);
-        // Preserve original slug/title — AI changes content, not page identity
         if (storeDoc?.meta?.slug) doc.meta.slug = storeDoc.meta.slug;
         if (storeDoc?.meta?.title) doc.meta.title = storeDoc.meta.title;
         setDocument(doc);
@@ -128,6 +190,20 @@ export function AIPanel() {
         <span className="text-sm font-semibold text-gray-800">AI Page Builder</span>
       </div>
 
+      {/* No providers configured notice */}
+      {noProviders && (
+        <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-800">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          <div>
+            No AI providers configured.{" "}
+            <a href="/admin/settings" className="underline font-medium inline-flex items-center gap-0.5">
+              Go to Settings <ExternalLink size={10} />
+            </a>{" "}
+            → AI Integration to add an API key or Ollama URL.
+          </div>
+        </div>
+      )}
+
       {/* Provider */}
       <div>
         <label className="text-xs text-gray-500 font-medium block mb-1">Provider</label>
@@ -136,7 +212,7 @@ export function AIPanel() {
           value={provider}
           onChange={(e) => handleProviderChange(e.target.value as AIProvider)}
         >
-          {PROVIDERS.map((p) => (
+          {filteredProviders.map((p) => (
             <option key={p.value} value={p.value}>{p.label}</option>
           ))}
         </select>
@@ -150,7 +226,7 @@ export function AIPanel() {
           value={model}
           onChange={(e) => setModel(e.target.value)}
         >
-          {MODELS[provider].map((m) => (
+          {allModels.map((m) => (
             <option key={m.value} value={m.value}>
               {m.label}{m.free ? " ✦ free" : ""}
             </option>
@@ -159,6 +235,12 @@ export function AIPanel() {
         {provider === "openrouter" && (
           <p className="text-xs text-gray-400 mt-1">
             Models marked ✦ free have no per-token cost on OpenRouter.
+          </p>
+        )}
+        {provider === "ollama" && (
+          <p className="text-xs text-gray-400 mt-1">
+            Run <code className="bg-gray-100 px-1 rounded">ollama pull &lt;model&gt;</code> to install.
+            Add custom model IDs in Settings → AI Integration.
           </p>
         )}
       </div>
@@ -196,11 +278,7 @@ export function AIPanel() {
           disabled={loading || !prompt.trim()}
           className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors"
         >
-          {loading ? (
-            <Loader2 size={14} className="animate-spin" />
-          ) : (
-            <Sparkles size={14} />
-          )}
+          {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
           Generate Full Page
         </button>
 

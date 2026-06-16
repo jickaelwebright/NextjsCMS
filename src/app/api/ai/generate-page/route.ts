@@ -10,7 +10,7 @@ import { z } from "zod";
 
 const RequestSchema = z.object({
   prompt: z.string().min(1).max(2000),
-  provider: z.enum(["openai", "openrouter", "nvidia-nim", "gemini"]),
+  provider: z.enum(["openai", "openrouter", "nvidia-nim", "gemini", "ollama"]),
   model: z.string().min(1),
   mode: z.enum(["page", "section"]).default("page"),
 });
@@ -20,6 +20,7 @@ const AI_KEY_SETTING: Record<AIProvider, string> = {
   openrouter: "ai_openrouter_key",
   "nvidia-nim": "ai_nim_key",
   gemini: "ai_gemini_key",
+  ollama: "ai_ollama_url",
 };
 
 export async function POST(req: NextRequest) {
@@ -43,17 +44,19 @@ export async function POST(req: NextRequest) {
   const apiKey = rows[0]?.value ?? null;
 
   if (!apiKey) {
-    return NextResponse.json(
-      {
-        error: `No API key configured for ${provider}. Go to Settings → AI Integration to add your key.`,
-        missingKey: true,
-      },
-      { status: 400 }
-    );
+    const errMsg =
+      provider === "ollama"
+        ? "No Ollama URL configured. Go to Settings → AI Integration to set the Ollama URL."
+        : `No API key configured for ${provider}. Go to Settings → AI Integration to add your key.`;
+    return NextResponse.json({ error: errMsg, missingKey: true }, { status: 400 });
   }
 
   try {
-    const result = await generateWithAI({ provider, apiKey, model }, prompt, mode);
+    const config =
+      provider === "ollama"
+        ? { provider, apiKey: "", model, baseUrl: apiKey }
+        : { provider, apiKey, model };
+    const result = await generateWithAI(config, prompt, mode);
     return NextResponse.json({ result });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Generation failed";
