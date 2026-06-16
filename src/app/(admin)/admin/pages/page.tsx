@@ -34,8 +34,9 @@ export default function PagesPage() {
 
   async function load() {
     setLoading(true);
-    const r = await fetch("/api/pages?type=page");
-    setPages(await r.json());
+    const r = await fetch("/api/pages");
+    const all = await r.json();
+    setPages(Array.isArray(all) ? all.filter((p: PageItem) => p.pageType !== "post") : []);
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -52,7 +53,8 @@ export default function PagesPage() {
       const { id } = await r.json();
       router.push(`/builder/${id}`);
     } else {
-      toast.error("Failed to create page");
+      const data = await r.json().catch(() => ({}));
+      toast.error(data.error ?? "Failed to create page");
       setCreating(false);
     }
   }
@@ -167,7 +169,12 @@ export default function PagesPage() {
           {pages.map((page) => (
             <div key={page.id} className="flex items-center gap-4 px-4 py-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{page.title}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-gray-900 truncate">{page.title}</p>
+                  {page.pageType === "landing" && (
+                    <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium shrink-0">Landing</span>
+                  )}
+                </div>
                 <p className="text-xs text-gray-400">/{page.slug}</p>
               </div>
               <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium",

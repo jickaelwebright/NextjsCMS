@@ -27,6 +27,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = CreatePageSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-  const id = await createPage(tenantSlug, parsed.data);
-  return NextResponse.json({ id }, { status: 201 });
+  try {
+    const id = await createPage(tenantSlug, parsed.data);
+    return NextResponse.json({ id }, { status: 201 });
+  } catch (err: any) {
+    const msg = String(err?.message ?? "");
+    if (msg.toLowerCase().includes("unique")) {
+      return NextResponse.json({ error: "A page with that slug already exists. Choose a different slug." }, { status: 409 });
+    }
+    return NextResponse.json({ error: "Failed to create page" }, { status: 500 });
+  }
 }

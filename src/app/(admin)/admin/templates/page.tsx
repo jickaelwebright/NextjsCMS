@@ -42,7 +42,12 @@ export default function TemplatesPage() {
       const { id } = await r.json();
       router.push(`/builder/${id}`);
     } else {
-      toast.error("Failed to create page");
+      const data = await r.json().catch(() => ({}));
+      const msg: string = data.error ?? "Failed to create page";
+      toast.error(msg);
+      if (r.status === 409) {
+        setUseModal((m) => m ? { ...m, slug: m.slug.replace(/-\d+$/, "") + "-2" } : m);
+      }
       setCreating(false);
     }
   }
