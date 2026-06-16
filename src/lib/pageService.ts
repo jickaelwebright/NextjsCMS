@@ -7,8 +7,8 @@ import type { PageDocument } from "@/types/page";
 
 export async function getPages(tenantSlug: string, type?: string) {
   const db = await getTenantDb(tenantSlug);
-  const q = db.select().from(pages).orderBy(desc(pages.updatedAt));
-  return type ? (await q).filter((p) => p.pageType === type) : q;
+  const result = await db.select().from(pages).orderBy(desc(pages.updatedAt));
+  return type ? result.filter((p) => p.pageType === type) : result;
 }
 
 export async function getPageById(tenantSlug: string, id: string) {

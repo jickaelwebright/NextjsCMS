@@ -30,24 +30,28 @@ export default function TemplatesPage() {
     setUseModal({ templateId: t.id, title: t.name, slug: t.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), pageType: "page" });
   }
 
-  async function applyTemplate() {
+  async function applyTemplate(slugOverride?: string) {
     if (!useModal || !useModal.title || !useModal.slug) return;
     setCreating(true);
+    const slug = slugOverride ?? useModal.slug;
     const r = await fetch("/api/pages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: useModal.title, slug: useModal.slug, pageType: useModal.pageType, templateId: useModal.templateId }),
+      body: JSON.stringify({ title: useModal.title, slug, pageType: useModal.pageType, templateId: useModal.templateId }),
     });
     if (r.ok) {
       const { id } = await r.json();
       router.push(`/builder/${id}`);
     } else {
       const data = await r.json().catch(() => ({}));
-      const msg: string = data.error ?? "Failed to create page";
-      toast.error(msg);
-      if (r.status === 409) {
-        setUseModal((m) => m ? { ...m, slug: m.slug.replace(/-\d+$/, "") + "-2" } : m);
+      if (r.status === 409 && !slugOverride) {
+        // Auto-retry once with a unique suffix
+        const newSlug = useModal.slug.replace(/-\d+$/, "") + "-" + Date.now().toString(36).slice(-4);
+        setUseModal((m) => m ? { ...m, slug: newSlug } : m);
+        await applyTemplate(newSlug);
+        return;
       }
+      toast.error(data.error ?? "Failed to create page");
       setCreating(false);
     }
   }
@@ -181,7 +185,7 @@ export default function TemplatesPage() {
             </div>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setUseModal(null)} className="flex-1 px-4 py-2 border rounded-lg text-sm">Cancel</button>
-              <button onClick={applyTemplate} disabled={creating || !useModal.title || !useModal.slug}
+              <button onClick={() => applyTemplate()} disabled={creating || !useModal.title || !useModal.slug}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
                 {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 Create & Edit
