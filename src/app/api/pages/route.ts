@@ -8,6 +8,7 @@ const CreatePageSchema = z.object({
   title: z.string().min(1),
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
   pageType: z.enum(["page", "post", "landing"]).optional(),
+  templateId: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {

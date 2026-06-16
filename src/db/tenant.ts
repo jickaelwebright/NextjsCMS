@@ -60,12 +60,19 @@ async function initTenantDb(tenantSlug: string): Promise<TenantDb> {
 
   for (const sql of tables) await client.execute(sql);
 
-  // Seed starter templates if empty
-  const countResult = await client.execute("SELECT COUNT(*) as n FROM templates");
-  const count = (countResult.rows[0] as any)?.n ?? 0;
-  if (count === 0) {
-    const now = Math.floor(Date.now() / 1000);
-    for (const t of STARTER_TEMPLATES) {
+  // Upsert starter templates (keeps content in sync with code on every deploy)
+  const now = Math.floor(Date.now() / 1000);
+  for (const t of STARTER_TEMPLATES) {
+    const existing = await client.execute({
+      sql: "SELECT id FROM templates WHERE name = ? LIMIT 1",
+      args: [t.name],
+    });
+    if (existing.rows.length > 0) {
+      await client.execute({
+        sql: "UPDATE templates SET category = ?, content = ? WHERE name = ?",
+        args: [t.category ?? null, JSON.stringify(t.content), t.name],
+      });
+    } else {
       await client.execute({
         sql: "INSERT INTO templates (id, name, category, thumbnail, content, created_at) VALUES (?, ?, ?, NULL, ?, ?)",
         args: [generateId(), t.name, t.category ?? null, JSON.stringify(t.content), now],

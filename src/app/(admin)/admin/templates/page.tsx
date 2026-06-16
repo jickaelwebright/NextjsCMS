@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Layout, Trash2, X } from "lucide-react";
+import { Loader2, Plus, Layout, Trash2, X, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 interface Template { id: string; name: string; category?: string; thumbnail?: string; createdAt: string; }
@@ -16,6 +16,7 @@ export default function TemplatesPage() {
   const [useModal, setUseModal] = useState<UseModal | null>(null);
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const importRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     setLoading(true);
@@ -46,6 +47,28 @@ export default function TemplatesPage() {
     }
   }
 
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    try {
+      const text = await file.text();
+      const doc = JSON.parse(text);
+      if (!doc.sections) throw new Error("Invalid template");
+      const name = window.prompt("Template name:", file.name.replace(/\.json$/i, ""));
+      if (!name) return;
+      const r = await fetch("/api/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, category: "Imported", content: doc }),
+      });
+      if (r.ok) { toast.success("Template imported"); load(); }
+      else toast.error("Import failed");
+    } catch {
+      toast.error("Invalid JSON file");
+    }
+  }
+
   async function deleteTemplate(id: string) {
     await fetch(`/api/templates/${id}`, { method: "DELETE" });
     setDeleteId(null);
@@ -57,7 +80,18 @@ export default function TemplatesPage() {
 
   return (
     <div className="p-8 max-w-5xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Templates</h1>
+      <div className="flex items-start justify-between mb-2">
+        <h1 className="text-2xl font-bold text-gray-900">Templates</h1>
+        <div>
+          <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+          <button
+            onClick={() => importRef.current?.click()}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 text-gray-600"
+          >
+            <Upload size={14} /> Import JSON
+          </button>
+        </div>
+      </div>
       <p className="text-sm text-gray-500 mb-6">Start from a pre-built template or save any page as a template from the builder.</p>
 
       {loading ? (

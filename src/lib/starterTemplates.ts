@@ -4,14 +4,18 @@ import type { PageDocument, Section } from "@/types/page";
 type ColBlocks = PageDocument["sections"][0]["columns"][0]["blocks"];
 
 function col(blocks: ColBlocks) {
-  return { id: generateId(), span: 1, blocks, styles: {} };
+  return { id: generateId(), span: 12, blocks, styles: {} };
 }
 
+const SPANS: Record<number, number[]> = { 1: [12], 2: [6, 6], 3: [4, 4, 4], 4: [3, 3, 3, 3] };
+
 function section(columns: ReturnType<typeof col>[], extra: Partial<Section> = {}): Section {
-  const layout = columns.length === 1 ? "1" : columns.length === 3 ? "1/3+1/3+1/3" : "1/2+1/2";
+  const n = columns.length;
+  const layout = n === 1 ? "1" : n === 3 ? "1/3+1/3+1/3" : "1/2+1/2";
+  const spans = SPANS[n] ?? [12];
   return {
     id: generateId(),
-    columns,
+    columns: columns.map((c, i) => ({ ...c, span: spans[i] ?? 12 })),
     columnLayout: layout as Section["columnLayout"],
     styles: {},
     ...extra,

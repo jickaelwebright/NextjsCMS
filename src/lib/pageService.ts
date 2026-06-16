@@ -1,7 +1,7 @@
 import { getTenantDb } from "@/db/tenant";
-import { pages } from "@/db/schema/tenant";
+import { pages, templates } from "@/db/schema/tenant";
 import { eq, desc } from "drizzle-orm";
-import { generateId, createEmptyPage } from "./utils";
+import { generateId, createEmptyPage, rehydrateDocumentIds } from "./utils";
 import { revalidatePath } from "next/cache";
 import type { PageDocument } from "@/types/page";
 
@@ -23,12 +23,28 @@ export async function getPageBySlug(tenantSlug: string, slug: string) {
 
 export async function createPage(
   tenantSlug: string,
-  data: { title: string; slug: string; pageType?: string }
+  data: { title: string; slug: string; pageType?: string; templateId?: string }
 ) {
   const db = await getTenantDb(tenantSlug);
   const id = generateId();
   const now = new Date();
-  const doc = createEmptyPage(data.title, data.slug);
+
+  let doc: PageDocument;
+  if (data.templateId) {
+    const tpl = await db.select().from(templates).where(eq(templates.id, data.templateId)).get();
+    if (tpl?.content) {
+      const tplDoc = JSON.parse(tpl.content) as PageDocument;
+      doc = rehydrateDocumentIds({
+        ...tplDoc,
+        meta: { ...tplDoc.meta, title: data.title, slug: data.slug },
+      });
+    } else {
+      doc = createEmptyPage(data.title, data.slug);
+    }
+  } else {
+    doc = createEmptyPage(data.title, data.slug);
+  }
+
   await db.insert(pages).values({
     id,
     title: data.title,
